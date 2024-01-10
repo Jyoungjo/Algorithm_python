@@ -1,23 +1,11 @@
 # 프로그래머스 159994 카드 뭉치 LV.1
 def solution(cards1, cards2, goal):
-    answer = ''
-    flag = False
-
     for word in goal:
-        if word == cards1[0]:
-            flag = True
-            cards1.pop(0) and cards1.append(' ')
-
-        elif word == cards2[0]:
-            flag = True
-            cards2.pop(0) and cards2.append(' ')
-
+        if len(cards1) > 0 and word == cards1[0]:
+            cards1.pop(0)
+        elif len(cards2) > 0 and word == cards2[0]:
+            cards2.pop(0)
         else:
-            flag = False
-            answer = 'No'
-            break
+            return 'No'
 
-    if flag:
-        answer = 'Yes'
-
-    return answer
+    return 'Yes'
