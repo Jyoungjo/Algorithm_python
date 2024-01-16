@@ -1,4 +1,4 @@
-# 프로그래머스 42576 완주하지 못한 선수
+# 프로그래머스 42576 완주하지 못한 선수 LV.2
 def solution(participant, completion):
     participant.sort()
     completion.sort()
