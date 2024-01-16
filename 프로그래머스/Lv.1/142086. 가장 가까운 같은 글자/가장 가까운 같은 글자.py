@@ -1,20 +1,11 @@
+# 프로그래머스 142086 가장 가까운 같은 글자 LV.1
 def solution(s):
     answer = []
-    li = []
-    idx = 0
-
-    for c in s:
-        t = 0
-        if c in li:
-            for i in range(len(li) - 1, -1, -1):
-                if c == li[i]:
-                    t = i
-                    break
-            answer.append(idx - t)
-            li.append(c)
-        else:
-            li.append(c)
+    di = dict()
+    for i in range(len(s)):
+        if s[i] not in di:
             answer.append(-1)
-        idx += 1
-
+        else:
+            answer.append(i - di[s[i]])
+        di[s[i]] = i
     return answer
