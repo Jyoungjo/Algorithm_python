@@ -9,8 +9,8 @@ def solution(n, lost, reserve):
 
     for i in reserve_set:
         if i - 1 in lost_set:
-            lost_set -= {i - 1, }
+            lost_set -= {i - 1}
         elif i + 1 in lost_set:
-            lost_set -= {i + 1, }
+            lost_set -= {i + 1}
 
     return n - len(lost_set)
