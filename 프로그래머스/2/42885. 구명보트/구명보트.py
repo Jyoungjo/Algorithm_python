@@ -4,23 +4,16 @@ from collections import deque
 
 def solution(people, limit):
     answer = 0
-    boats = deque()
-    people.sort()
-    for i in range(len(people)):
-        boats.append(people[i])
+    boats = deque(sorted(people))
 
-    front = 0
+    while boats:
+        first = boats.popleft()
+        if not boats:
+            return answer + 1
+        last = boats.pop()
 
-    while len(boats) > 1:
-        if boats[front] + boats[-1] > limit:
-            answer += 1
-            boats.pop()
-        else:
-            boats.pop()
-            boats.popleft()
-            answer += 1
-
-    if len(boats) == 1:
-        boats.popleft()
+        if first + last > limit:
+            boats.appendleft(first)
         answer += 1
+
     return answer
