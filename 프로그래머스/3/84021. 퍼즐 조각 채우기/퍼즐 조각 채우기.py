@@ -1,72 +1,85 @@
 # 프로그래머스 84021 퍼즐 조각 채우기 LV.3
-empty, blocks = [], []
-def chk():   # 빈칸에 맞는 퍼즐조각이 있는지 확인
-    global empty, blocks
-    for b in range(len(blocks)):
-        block = blocks[b].copy()
-        for i in range(4):
-            for j in range(len(block)):  # 회전---------
-                block[j][0], block[j][1] = block[j][1], -block[j][0]   # 회전---------
-            block.sort()   # 좌표 초기화------
-            x0, y0 = block[0]
-            for k in range(len(block)):
-                block[k][0] = block[k][0] - x0
-                block[k][1] = block[k][1] - y0   # 좌표 초기화------
-            if empty == block:
-                del blocks[b]
-                return True
-    return False
+from collections import deque
+
+dx = [-1, 0, 1, 0]
+dy = [0, -1, 0, 1]
+
+
+def bfs(begin, target, return_list, r_c_len, original, changed):
+    i, j = begin
+    q = deque()
+    q.append(begin)
+    target[i][j] = changed
+
+    while q:
+        x, y = q.popleft()
+        return_list.append([x, y])
+        for d in range(4):
+            nx, ny = x + dx[d], y + dy[d]
+            if 0 <= nx < r_c_len and 0 <= ny < r_c_len and target[nx][ny] == original:
+                q.append([nx, ny])
+                target[nx][ny] = changed
+
+
+def arrange_relative_coordinates(target):
+    target.sort()
+    x0, y0 = target[0]
+
+    for k in range(len(target)):
+        target[k][0] = target[k][0] - x0
+        target[k][1] = target[k][1] - y0
 
 
 def solution(game_board, table):
-    global empty, blocks
     answer = 0
-    n = len(game_board)
     blocks = []
-    dx, dy = [-1, 0, 1, 0],[0, -1, 0, 1]
-    for i in range(n):
-        for j in range(n):
-            if table[i][j] == 1:
-                block = []  # 퍼즐조각
-                qu = [[i, j]]
-                table[i][j] = 0
-                while qu:
-                    x, y = qu.pop(0)
-                    block.append([x, y])
-                    for d in range(4):
-                        nx, ny = x + dx[d], y + dy[d]
-                        if 0 <= nx < n and 0 <= ny < n:
-                            if table[nx][ny] == 1:
-                                qu.append([nx, ny])
-                                table[nx][ny] = 0
-                block.sort()   # 좌표 초기화------
-                x0, y0 = block[0]
-                for k in range(len(block)):
-                    block[k][0] = block[k][0] - x0
-                    block[k][1] = block[k][1] - y0   # 좌표 초기화------
-                blocks.append(block.copy())
+    m = len(game_board)
 
-    for i in range(n):
-        for j in range(n):
+    # 블록 찾기 -> 찾아서 blocks 에 좌표 저장 (시작이 (0, 0) 으로 저장)
+    for i in range(m):
+        for j in range(m):
+            if table[i][j] == 1:
+                # bfs 로 block 찾기
+                block = []
+                bfs([i, j], table, block, m, 1, 0)
+
+                # block 의 좌표를 상대 좌표로 정리하기
+                arrange_relative_coordinates(block)
+
+                # blocks 에 저장
+                blocks.append(block)
+
+    # 빈칸 찾기 -> 찾아서 blanks 에 좌표 저장(상대 좌표) -> block 과 blank 일치하는지 체크
+    for i in range(m):
+        for j in range(m):
             if game_board[i][j] == 0:
-                empty = []   # 빈칸
-                qu = [[i, j]]
-                game_board[i][j] = 1
-                while qu:
-                    x, y = qu.pop(0)
-                    empty.append([x, y])
-                    for d in range(4):
-                        nx, ny = x + dx[d], y + dy[d]
-                        if 0 <= nx < n and 0 <= ny < n:
-                            if game_board[nx][ny] == 0:
-                                qu.append([nx, ny])
-                                game_board[nx][ny] = 1
-                empty.sort()    # 좌표 초기화-----
-                x0, y0 = empty[0]
-                for k in range(len(empty)):
-                    empty[k][0] = empty[k][0] - x0
-                    empty[k][1] = empty[k][1] - y0   # 좌표 초기화-----
-                if chk():  # 빈칸에 맞는 퍼즐조각이 있는지 확인
-                    answer += len(empty)
+                blank = []
+                bfs([i, j], game_board, blank, m, 0, 1)
+
+                # blank 의 좌표를 상대 좌표로 정리하기
+                arrange_relative_coordinates(blank)
+
+                # 현재 blank 와 일치하는 block 찾기 -> 회전하면서 일치하면 정답 기록
+                for b in range(len(blocks)):
+                    cur_block = blocks[b]
+                    flag = False
+
+                    # block 시계 방향 회전 (90 -> 180 -> 270 -> 360)
+                    for c in range(4):
+                        for idx in range(len(cur_block)):
+                            cur_block[idx][0], cur_block[idx][1] = cur_block[idx][1], -cur_block[idx][0]
+
+                        # 상대 좌표 정리
+                        arrange_relative_coordinates(cur_block)
+
+                        # 일치하면 해당 블록 제거
+                        if blank == cur_block:
+                            del blocks[b]
+                            answer += len(cur_block)
+                            flag = True
+                            break
+
+                    if flag:
+                        break
 
     return answer
