@@ -13,7 +13,7 @@ def solution(picks, minerals):
             arr.append([m_cnt['diamond'], m_cnt['iron'], m_cnt['stone']])
             m_cnt['diamond'], m_cnt['iron'], m_cnt['stone'] = 0, 0, 0
     
-    arr.sort(key=lambda x: (x[0], x[1], x[2]), reverse = True)
+    arr.sort(key=lambda x: (x[0], x[1], x[2]), reverse=True)
     
     for d, i, s in arr:
         for j in range(3):
@@ -21,4 +21,5 @@ def solution(picks, minerals):
                 picks[j] -= 1
                 answer += d * f[j][0] + i * f[j][1] + s * f[j][2]
                 break
+                
     return answer
