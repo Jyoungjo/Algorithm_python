@@ -4,7 +4,6 @@ def solution(sequence, k):
     answer = [0, len(sequence)]
     s, e = 0, 0
     p_sum = sequence[0]
-    
     while True:
         if p_sum < k:
             e += 1
@@ -17,5 +16,4 @@ def solution(sequence, k):
                     answer = [s, e]
             p_sum -= sequence[s]
             s += 1
-    
     return answer
