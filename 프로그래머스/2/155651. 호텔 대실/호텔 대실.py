@@ -4,12 +4,14 @@
 import heapq
 
 
+def convert_time(time):
+    return int(time[:2])*60+int(time[3:])
+
+
 def solution(book_time):
     answer = 1
     for i in range(len(book_time)):
-        for j in range(len(book_time[i])):
-            a = book_time[i][j].split(':')
-            book_time[i][j] = int(a[0]) * 60 + int(a[1])
+        book_time[i][0], book_time[i][1] = convert_time(book_time[i][0]), convert_time(book_time[i][1])
 
     book_time.sort(key=lambda x: x[0])
     room = [book_time[0][1]]
