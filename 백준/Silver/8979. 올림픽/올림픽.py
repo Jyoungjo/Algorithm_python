@@ -16,16 +16,13 @@ rank = 1
 
 # 메달 개수 별로 내림차순 정리
 nations = sorted(nations.items(), key=lambda x: (x[1][0], x[1][1], x[1][2]), reverse=True)
+prev = None
 for i, (k, v) in enumerate(nations):
-    if i == 0 or i == N - 1:
+    if prev is not None and v == prev:
         ranks[k] = rank
-        continue
-
-    if nations[i - 1][1] == nations[i][1]:
-        ranks[k] = rank
-        rank += 2
     else:
-        rank += 1
+        rank = i + 1
         ranks[k] = rank
+    prev = v
 
 print(ranks[K])
