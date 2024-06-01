@@ -9,15 +9,17 @@ M = int(sys.stdin.readline().strip())
 S = sys.stdin.readline().strip()
 
 # Pn 만들기
-Pn = [''] * (N+1)
-Pn[0] = 'I'
-for i in range(1, N+1):
-    Pn[i] = Pn[i-1] + 'OI'
+arr = ['I']
+for i in range(N):
+    arr.append('OI')
+Pn = ''.join(arr)
 
-cnt = 0
+cnt, idx = 0, 0
 # 문자열 S에서 I로 시작하는 부분부터 슬라이싱해서 일치여부 확인
-for i in range(M):
-    if S[i] == 'I':
-        if S[i:i+len(Pn[-1])] == Pn[-1]:
-            cnt += 1
+while idx < M:
+    if S[idx] == 'I' and S[idx:idx+len(Pn)] == Pn:
+        cnt += 1
+        idx += 2
+    else:
+        idx += 1
 print(cnt)
