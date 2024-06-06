@@ -20,20 +20,19 @@ def update_min_val(check, min_heap):
 
 
 def run_recommend_system(command, min_heap, max_heap, check):
+    update_max_val(check, max_heap)
+    update_min_val(check, min_heap)
     if 'add' in command:
-        update_max_val(check, max_heap)
-        update_min_val(check, min_heap)
+        # 만약 add 된 값이 이미 푼 문제 번호 + 다른 난이도라면 풀었는데 check[num] = True 로 나올 수 있다.
         heapq.heappush(min_heap, (int(command[2]), int(command[1])))
         heapq.heappush(max_heap, (-int(command[2]), -int(command[1])))
         check[int(command[1])] = True
     elif 'recommend' in command:
         if command[1] == '1':
             # 제일 어려운 문제가 이미 풀렸는데 heap에 남아있을 수 있다.
-            update_max_val(check, max_heap)
             return -max_heap[0][1]
         else:
             # 제일 쉬운 문제가 이미 풀렸는데 heap에 남아있을 수 있다.
-            update_min_val(check, min_heap)
             return min_heap[0][1]
     else:
         check[int(command[1])] = False
