@@ -6,21 +6,9 @@ input = sys.stdin.readline
 
 
 def compress_coordinate(nums):
-    sorted_nums = sorted(list(set(nums)))
-    return [binary_search(sorted_nums, num) for num in nums]
-
-
-def binary_search(nums, target):
-    start, end = 0, len(nums) - 1
-    while start <= end:
-        mid = (start + end) // 2
-        if nums[mid] < target:
-            start = mid + 1
-        elif nums[mid] > target:
-            end = mid - 1
-        else:
-            return mid
-    return 0
+    sorted_nums = sorted(set(nums))
+    num_idx = {num: i for i, num in enumerate(sorted_nums)}
+    return [num_idx[num] for num in nums]
 
 
 def main():
