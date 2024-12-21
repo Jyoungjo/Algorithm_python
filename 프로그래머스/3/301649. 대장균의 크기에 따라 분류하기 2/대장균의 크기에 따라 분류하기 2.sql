@@ -1,0 +1,13 @@
+SELECT ID,
+       CASE WHEN E.P <= 25 THEN 'CRITICAL'
+            WHEN E.P <= 50 THEN 'HIGH'
+            WHEN E.P <= 75 THEN 'MEDIUM'
+            ELSE 'LOW'
+       END AS COLONY_NAME
+FROM (
+    SELECT ID, 
+    PERCENT_RANK() OVER (ORDER BY SIZE_OF_COLONY DESC) * 100 AS P
+    FROM ECOLI_DATA
+     ) E
+ORDER BY ID
+;
