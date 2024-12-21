@@ -1,0 +1,18 @@
+-- ECOLI_DATA : ID, PARENT_ID, SIZE_OF_COLONY, DIFFERENTIATION_DATE, GENOTYPE
+-- 개체 ID, 부모 ID, 개체 크기, 분화 날짜, 형질
+
+-- 개체 ID, 자식의 수 (없으면 0) / 개체 ID 오름차순
+
+SELECT E.ID, IFNULL(CNT.C, 0) CHILD_COUNT
+FROM ECOLI_DATA E
+    LEFT JOIN (
+        SELECT PARENT_ID, COUNT(*) C
+        FROM ECOLI_DATA
+        WHERE PARENT_ID IN (
+            SELECT ID
+            FROM ECOLI_DATA
+        )
+        GROUP BY PARENT_ID
+    ) AS CNT
+    ON CNT.PARENT_ID = E.ID
+;
