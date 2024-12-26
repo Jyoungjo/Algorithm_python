@@ -1,0 +1,12 @@
+-- 2022-05 예약 환자 수를 진료과코드 별 조회 / 환자수 오름차순, 코드 오름차순
+
+SELECT MCDP_CD AS '진료과코드', COUNT(*) AS '5월예약건수'
+FROM APPOINTMENT
+WHERE APNT_NO IN (
+    SELECT APNT_NO
+    FROM APPOINTMENT
+    WHERE APNT_YMD LIKE '2022-05%'
+    GROUP BY APNT_NO
+)
+GROUP BY MCDP_CD
+ORDER BY 2, 1
