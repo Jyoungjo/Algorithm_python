@@ -1,0 +1,7 @@
+-- 고양이와 개 각각 몇 마리인지 / 고양이 먼저
+
+SELECT ANIMAL_TYPE, COUNT(*) AS count
+FROM ANIMAL_INS
+WHERE ANIMAL_TYPE IN ('Cat', 'Dog')
+GROUP BY ANIMAL_TYPE
+ORDER BY 1
