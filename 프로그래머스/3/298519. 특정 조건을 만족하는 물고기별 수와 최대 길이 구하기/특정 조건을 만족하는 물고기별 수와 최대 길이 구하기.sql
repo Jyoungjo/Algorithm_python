@@ -1,0 +1,15 @@
+-- 평균 길이 33CM 이상인 물고기 종류별 잡은 수, 최대 길이, 물고기 종류 출력
+-- 종류 오름차순 / 10CM 이하는 10CM으로 평균 길이 구하기
+
+SELECT COUNT(*) AS FISH_COUNT,
+       MAX(LENGTH) AS MAX_LENGTH,
+       FISH_TYPE
+FROM FISH_INFO
+WHERE FISH_TYPE IN (
+    SELECT FISH_TYPE
+    FROM FISH_INFO
+    GROUP BY FISH_TYPE
+    HAVING AVG(IFNULL(LENGTH, 10)) >= 33
+)
+GROUP BY FISH_TYPE
+ORDER BY 3
