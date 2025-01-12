@@ -1,0 +1,8 @@
+-- 입양 간 동물 중, 보호기간 가장 긴 동물 두마리 아이디, 이름 조회
+-- 보호 기간 긴 순
+SELECT I.ANIMAL_ID, I.NAME
+FROM ANIMAL_INS AS I
+    JOIN ANIMAL_OUTS AS O
+    ON I.ANIMAL_ID = O.ANIMAL_ID
+ORDER BY DATEDIFF(O.DATETIME, I.DATETIME) DESC
+LIMIT 2
