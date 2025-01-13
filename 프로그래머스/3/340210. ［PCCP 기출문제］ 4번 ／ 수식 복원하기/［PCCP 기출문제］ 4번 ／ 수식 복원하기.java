@@ -5,7 +5,7 @@ class Solution {
         // 1. 수식 중 X가 없는 수식 찾기
         // 2. X가 있다면 해당 수식 킵
         // 3. 없다면 해당 수식으로 진법 확인
-        // 4. 킵해둔 수식에서 X 값 유추하기
+        // 4. 킵해둔 수식에서 X 값 유추하기 -> 수식 계산값이 작은 순으로 분석
         int size = expressions.length;
         Deque<String> list = new ArrayDeque<>();
         Set<Integer> dSet = new HashSet<>(List.of(2,3,4,5,6,7,8,9));
@@ -19,7 +19,11 @@ class Solution {
 
             // 자릿수로 진법 확인
             for (int j = 0; j < 3; j++) {
-                max = checkDigit(list, max, e, ex[j * 2]);
+                if (ex[j * 2].equals("X")) {
+                    list.add(e);
+                    break;
+                }
+                max = Math.max(max, checkDigit(ex[j * 2]));
             }
 
             for (int j = max; j < 10; j++) {
@@ -30,7 +34,7 @@ class Solution {
             Set<Integer> tmpSet = new HashSet<>();
             if (!ex[4].equals("X")) {
                 for (int s : set) {
-                    if (!calSystem(ex, s)) tmpSet.add(s);
+                    if (!calRadix(ex, s)) tmpSet.add(s);
                 }
             }
 
@@ -71,7 +75,7 @@ class Solution {
         return sArr[0] + " " + sArr[1] + " " + sArr[2] + " " + sArr[3] + " " + result;
     }
 
-    private boolean calSystem(String[] ex, int sn) {
+    private boolean calRadix(String[] ex, int sn) {
         try {
             int n1 = Integer.parseInt(ex[0], sn);
             int n2 = Integer.parseInt(ex[2], sn);
@@ -79,24 +83,18 @@ class Solution {
 
             if (ex[1].equals("+")) return n1 + n2 == n3;
             else return n1 - n2 == n3;
-        } catch (NumberFormatException e) {
-            return false; // 해당 진법은 유효하지 않음
+        } catch(RuntimeException e) {
+            System.out.println(e);
         }
+        return false;
     }
 
-    private int checkDigit(Deque<String> list, int max, String e, String num) {
-        if (num.equals("X")) {
-            list.add(e);
-            return max;
+    private int checkDigit(String num) {
+        int res = 0;
+        for (char c : num.toCharArray()) {
+            int digit = c - '0';
+            res = Math.max(res, digit + 1);
         }
-
-        int len = num.length();
-        int n = Integer.parseInt(num);
-        while (n > 0) {
-            int tmp = (int) (n / Math.pow(10, --len));
-            if (tmp != 0 && max < tmp + 1) max = tmp + 1;
-            n %= (int) Math.pow(10, len);
-        }
-        return max;
+        return res;
     }
 }
