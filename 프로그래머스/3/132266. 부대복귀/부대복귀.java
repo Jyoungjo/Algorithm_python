@@ -7,38 +7,33 @@ class Solution {
         int[] answer = new int[sources.length];
         init(n, roads);
         
+        int[] dist = new int[n + 1];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        
+        findMinTime(n, destination, dist);
         for (int i = 0; i < sources.length; i++) {
-            answer[i] = findMinTime(n, destination, sources[i]);
+            answer[i] = dist[sources[i]] == Integer.MAX_VALUE ? -1 : dist[sources[i]];
         }
         
         return answer;
     }
     
-    private int findMinTime(int n, int start, int end) {
-        Queue<int[]> q = new LinkedList<>();
-        int[] dist = new int[n + 1];
-        boolean[] visited = new boolean[n + 1];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        q.add(new int[]{start, 0});
+    private void findMinTime(int n, int start, int[] dist) {
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+        pq.add(new int[]{start, 0});
         dist[start] = 0;
         
-        if (start == end) return 0;
-        
-        while (!q.isEmpty()) {
-            int[] cur = q.poll();
+        while (!pq.isEmpty()) {
+            int[] cur = pq.poll();
             int now = cur[0], d = cur[1];
-            visited[now] = true;
             
             for (int next : graph.get(now)) {
-                if (visited[next]) continue;
-                if (next == end) return d + 1;
-                
-                dist[next] = d + 1;
-                q.add(new int[]{next, d + 1});
+                if (dist[next] > d + 1) {
+                    dist[next] = d + 1;
+                    pq.add(new int[]{next, d + 1});
+                }
             }
         }
-        
-        return -1;
     }
     
     private void init(int n, int[][] roads) {
