@@ -9,13 +9,6 @@ class Solution {
             findUser(user_id[i], "", 0);
         }
         dfs(banned_id, 0, new HashSet<>());
-        // for (String key : idMap.keySet()) {
-        //     System.out.printf("k: %s / v: ", key);
-        //     System.out.println(idMap.get(key));
-        // }
-        for (Set<String> set2 : set) {
-            System.out.println(set2);
-        }
         return set.size();
     }
     
