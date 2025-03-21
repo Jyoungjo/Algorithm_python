@@ -1,10 +1,10 @@
 # [level 3] 카운트 다운 - 131129 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/131129#qna) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/131129) 
 
 ### 성능 요약
 
-메모리: 96.4 MB, 시간: 48.03 ms
+메모리: 80.6 MB, 시간: 42.66 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2025년 02월 21일 16:53:44
+2025년 03월 21일 18:02:56
 
 ### 문제 설명
 
