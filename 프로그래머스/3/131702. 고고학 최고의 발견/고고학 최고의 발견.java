@@ -1,77 +1,77 @@
 import java.util.*;
 
 class Solution {
-    int[][] clock;
-    List<List<Integer>> times = new ArrayList<>();
-    int answer = Integer.MAX_VALUE;
-    int R, C;
+    int INF = 987654321;
+    int r, c;
+    int answer;
     
     public int solution(int[][] clockHands) {
-        R = clockHands.length;
-        C = clockHands[0].length;
-        repeatPermutation(new ArrayList<>(), 0);
-        findMinVal(clockHands);
+        /*
+            퍼즐은 내가 움직이려는 칸 바로 윗칸의 영향을 받는다.
+            하지만 맨 윗줄의 경우 그보다 윗 줄이 없기 때문에 윗줄을 하나 더 추가한 배열을 만들어 경우의 수를 탐색한다.
+        */
+        answer = INF;
+        r = clockHands.length; c = clockHands[0].length;
+        
+        int[] firstRow = new int[c];
+        dfs(clockHands, firstRow, 0);
         return answer;
     }
     
-    private void findMinVal(int[][] clockHands) {
-        for (List<Integer> time : times) {
-            int[][] newClock = copy(time, clockHands);
-            int rotCnt = solve(newClock);
-            if (isCorrect(newClock)) answer = Math.min(answer, rotCnt);
-        }
-    }
-    
-    private boolean isCorrect(int[][] clock) {
-        for (int i = 1; i <= R; i++) {
-            for (int j = 0; j < C; j++) {
-                if (clock[i][j] != 0) return false;
-            }
-        }
-        return true;
-    }
-    
-    private int solve(int[][] newClock) {
-        int tot = 0;
-        for (int i = 1; i <= R; i++) {
-            for (int j = 0; j < C; j++) {
-                if (newClock[i - 1][j] != 0) {
-                    int cnt = (4 - newClock[i - 1][j]) % 4;
-                    rotate(newClock, i, j, cnt);
-                    tot += cnt;
-                }
-            }
-        }
-        return tot;
-    }
-    
-    private void rotate(int[][] newClock, int i, int j, int cnt) {
-        newClock[i][j] = (newClock[i][j] + cnt) % 4;
-        newClock[i - 1][j] = (newClock[i - 1][j] + cnt) % 4;
-        if (i + 1 <= R) newClock[i + 1][j] = (newClock[i + 1][j] + cnt) % 4;
-        if (j - 1 >= 0) newClock[i][j - 1] = (newClock[i][j - 1] + cnt) % 4;
-        if (j + 1 < C) newClock[i][j + 1] = (newClock[i][j + 1] + cnt) % 4;
-    }
-    
-    private int[][] copy(List<Integer> time, int[][] clockHands) {
-        int[][] newClock = new int[R + 1][C];
-        newClock[0] = time.stream().mapToInt(Integer::intValue).toArray();
-        for (int i = 0; i < R; i++) {
-            newClock[i + 1] = Arrays.copyOf(clockHands[i], C);
-        }
-        return newClock;
-    }
-    
-    private void repeatPermutation(List<Integer> tmp, int depth) {
-        if (depth == C) {
-            times.add(tmp);
+    private void dfs(int[][] clockHands, int[] firstRow, int depth) {
+        if (depth == r) {
+            int[][] newClock = copy(clockHands, firstRow);
+            answer = Math.min(answer, solve(newClock));
             return;
         }
         
         for (int i = 0; i < 4; i++) {
-            List<Integer> newList = new ArrayList<>(tmp);
-            newList.add(i);
-            repeatPermutation(newList, depth + 1);
+            firstRow[depth] = i;
+            dfs(clockHands, firstRow, depth + 1);
         }
+    }
+    
+    private int[][] copy(int[][] original, int[] first) {
+        int[][] copied = new int[r + 1][c];
+        Arrays.setAll(copied[0], col -> first[col]);
+        for (int i = 1; i <= r; i++) {
+            int row = i - 1;
+            Arrays.setAll(copied[i], col -> original[row][col]);
+        }
+        return copied;
+    }
+    
+    private int solve(int[][] clocks) {
+        int cnt = 0;
+        for (int row = 1; row <= r; row++) {
+            for (int col = 0; col < c; col++) {
+                int rotCnt = (4 - clocks[row - 1][col]) % 4;
+                if (rotCnt > 0) {
+                    rotate(clocks, row, col, rotCnt);
+                    cnt += rotCnt;
+                }
+            }
+        }
+        
+        if (allAlign(clocks)) return cnt;
+        return INF;
+    }
+    
+    private void rotate(int[][] clocks, int row, int col, int cnt) {
+        if (row - 1 >= 0) clocks[row - 1][col] = (clocks[row - 1][col] + cnt) % 4;
+        if (row + 1 <= r) clocks[row + 1][col] = (clocks[row + 1][col] + cnt) % 4;
+        if (col - 1 >= 0) clocks[row][col - 1] = (clocks[row][col - 1] + cnt) % 4;
+        if (col + 1 < c) clocks[row][col + 1] = (clocks[row][col + 1] + cnt) % 4;
+        clocks[row][col] = (clocks[row][col] + cnt) % 4;
+    }
+    
+    private boolean allAlign(int[][] clocks) {
+        for (int i = 1; i <= r; i++) {
+            for (int j = 0; j < c; j++) {
+                if (clocks[i][j] != 0) return false;
+            }
+        }
+        
+        return true;
     }
 }
