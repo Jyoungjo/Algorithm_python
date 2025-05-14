@@ -1,56 +1,73 @@
+/*
+    A와 B가 번갈아가면서 게임 진행
+    A가 진행한 방향에 따라 B가 선택할 것이 달라짐
+    보드의 최대 범위가 5x5 이므로 완전 탐색 진행
+    백트래킹으로 상태 가지치기 진행 -> ex) A가 이동하고 나서의 B의 이동을 정하기 때문에
+    
+    게임 종료 조건
+    1. 한 플레이어가 이동 불가한 경우(주위 발판 X or 보드 밖)
+    2. 두 플레이어가 같은 발판 위에 있을 때, 어떤 플레이어가 움직여서 발판이 사라진 경우
+*/
+
 import java.util.*;
 
-class Turn {
+class Game {
     boolean isWin;
-    int cnt;
+    int moveCnt;
     
-    public Turn(boolean isWin, int cnt) {
+    Game(boolean isWin, int moveCnt) {
         this.isWin = isWin;
-        this.cnt = cnt;
+        this.moveCnt = moveCnt;
     }
 }
 
 class Solution {
-    int[][] map;
-    int[] dy = {-1, 0, 1, 0}, dx = {0, 1, 0, -1};
-    int r, c, INF = Integer.MAX_VALUE;
+    static final int INF = Integer.MAX_VALUE;
+    final int[] dy = {-1, 0, 1, 0}, dx = {0, 1, 0, -1};
+    int[][] BOARD;
+    int Y, X;
     
     public int solution(int[][] board, int[] aloc, int[] bloc) {
-        map = board;
-        r = board.length;
-        c = board[0].length;
-        Turn result = dfs(aloc, bloc, true, 0);
-        return result.cnt;
+        Y = board.length; X = board[0].length;
+        BOARD = board;
+        Game game = play(aloc, bloc, true, 0);
+        return game.moveCnt;
     }
     
-    // isMyTurn : true -> A턴, false -> B턴
-    private Turn dfs(int[] aloc, int[] bloc, boolean isMyTurn, int cnt) {
+    private Game play(int[] aloc, int[] bloc, boolean isMyTurn, int mv) {
         int ay = aloc[0], ax = aloc[1], by = bloc[0], bx = bloc[1];
         
-        if ((map[ay][ax] == 0 && isMyTurn) || (map[by][bx] == 0 && !isMyTurn)) return new Turn(false, cnt);
+        if ((BOARD[ay][ax] == 0 && isMyTurn) || (BOARD[by][bx] == 0 && !isMyTurn))
+            return new Game(false, mv);
         
         int y = isMyTurn ? ay : by, x = isMyTurn ? ax : bx;
-        map[y][x] = 0;
-        Turn result;
+        Game game = null;
         boolean canMove = false;
         int win = INF, lose = -INF;
         
-        for (int i = 0; i < 4; i++) {
-            int ny = y + dy[i], nx = x + dx[i];
-            if (!isWithinRange(ny, nx) || map[ny][nx] == 0) continue;
+        BOARD[y][x] = 0;
+        
+        for (int d = 0; d < 4; d++) {
+            int ny = y + dy[d], nx = x + dx[d];
+            
+            if (!isInRange(ny, nx) || BOARD[ny][nx] == 0) continue;
+            
             canMove = true;
-            result = isMyTurn ? dfs(new int[]{ny, nx}, bloc, !isMyTurn, cnt + 1) : dfs(aloc, new int[]{ny, nx}, !isMyTurn, cnt + 1);
-            if (result.isWin) lose = Math.max(lose, result.cnt);
-            else win = Math.min(win, result.cnt);
+            game = isMyTurn ? play(new int[]{ny, nx}, bloc, !isMyTurn, mv + 1) 
+                : play(aloc, new int[]{ny, nx}, !isMyTurn, mv + 1);
+            
+            if (game.isWin) lose = Math.max(lose, game.moveCnt);
+            else win = Math.min(win, game.moveCnt);
         }
         
-        map[y][x] = 1;
-        if (!canMove) return new Turn(false, cnt);
-        if (win != INF) return new Turn(true, win);
-        return new Turn(false, lose);
+        BOARD[y][x] = 1;
+        
+        if (!canMove) return new Game(false, mv);
+        if (win != INF) return new Game(true, win);
+        return new Game(false, lose);
     }
     
-    private boolean isWithinRange(int y, int x) {
-        return 0 <= y && y < r && 0 <= x && x < c;
+    private boolean isInRange(int y, int x) {
+        return 0 <= y && y < Y && 0 <= x && x < X;
     }
 }
