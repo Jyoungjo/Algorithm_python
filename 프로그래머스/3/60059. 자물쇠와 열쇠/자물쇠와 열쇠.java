@@ -2,68 +2,68 @@ import java.util.*;
 
 class Solution {
     public boolean solution(int[][] key, int[][] lock) {
-        int M = key.length;
-        int N = lock.length;
-        int size = N + 2 * (M - 1);
-
-        // 4가지 회전
-        for (int rot = 0; rot < 4; rot++) {
-            int[][] rotatedKey = rotate(key, rot);
-            
-            // 확장된 판 위에서 key를 움직이며 확인
-            for (int y = 0; y <= size - M; y++) {
-                for (int x = 0; x <= size - M; x++) {
-                    if (check(rotatedKey, lock, y, x, size)) {
-                        return true;
+        int len = lock.length + (key.length - 1) * 2;
+        int[][] exLock = new int[len][len];
+        
+        for (int i = key.length - 1; i < key.length - 1 + lock.length; i++) {
+            for (int j = key.length - 1; j < key.length - 1 + lock.length; j++) {
+                exLock[i][j] = lock[i - (key.length - 1)][j - (key.length - 1)];
+            }
+        }
+        
+        for (int r = 0; r < 4; r++) {
+            if (isMatch(key, exLock, lock.length)) return true;
+            rotate(key);
+        }
+        
+        return false;
+    }
+    
+    private boolean isMatch(int[][] key, int[][] exLock, int lockLen) {
+        for (int dy = 0; dy < key.length - 1 + lockLen; dy++) {
+            for (int dx = 0; dx < key.length - 1 + lockLen; dx++) {
+                for (int y = 0; y < key.length; y++) {
+                    for (int x = 0; x < key.length; x++) {
+                        exLock[y + dy][x + dx] += key[y][x];
+                    }
+                }
+                
+                if (isSolved(exLock, key.length - 1, key.length - 1 + lockLen)) return true;
+                
+                for (int y = 0; y < key.length; y++) {
+                    for (int x = 0; x < key.length; x++) {
+                        exLock[y + dy][x + dx] -= key[y][x];
                     }
                 }
             }
         }
+        
         return false;
     }
-
-    // key 90도 회전 rot번
-    private int[][] rotate(int[][] key, int rot) {
-        int M = key.length;
-        int[][] result = new int[M][M];
-        for (int r = 0; r < rot; r++) {
-            int[][] tmp = new int[M][M];
-            for (int i = 0; i < M; i++) {
-                for (int j = 0; j < M; j++) {
-                    tmp[j][M - 1 - i] = key[i][j];
-                }
-            }
-            key = tmp;
-        }
-        return key;
-    }
-
-    // 확장된 판에서 key와 lock을 합쳐 확인
-    private boolean check(int[][] key, int[][] lock, int y, int x, int size) {
-        int M = key.length;
-        int N = lock.length;
-        int[][] board = new int[size][size];
-
-        // lock 배치
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                board[i + M - 1][j + M - 1] = lock[i][j];
+    
+    private boolean isSolved(int[][] exLock, int s, int e) {
+        for (int i = s; i < e; i++) {
+            for (int j = s; j < e; j++) {
+                if (exLock[i][j] != 1) return false;
             }
         }
-
-        // key 배치
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                board[y + i][x + j] += key[i][j];
-            }
-        }
-
-        // lock 영역 확인
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (board[i + M - 1][j + M - 1] != 1) return false;
-            }
-        }
+        
         return true;
+    }
+    
+    private void rotate(int[][] key) {
+        int[][] tmp = new int[key.length][key.length];
+        
+        for (int i = 0; i < key.length; i++) {
+            for (int j = 0; j < key.length; j++) {
+                tmp[i][j] = key[j][key.length - 1 - i];
+            }
+        }
+        
+        for (int i = 0; i < key.length; i++) {
+            for (int j = 0; j < key.length; j++) {
+                key[i][j] = tmp[i][j];
+            }
+        }
     }
 }
