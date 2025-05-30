@@ -1,97 +1,82 @@
 import java.util.*;
-import java.util.regex.*;
 
-class Link {
+class Web {
     int idx;
-    String url;
     String[] ext_urls;
-    double score, l_score;
+    double score, link_score;
     
-    public Link(int idx, String url) {
+    public Web(int idx) {
         this.idx = idx;
-        this.url = url;
     }
     
-    public void addExtUrls(List<String> extUrlList) {
-        this.ext_urls = extUrlList.toArray(String[]::new);
+    public void addExtUrls(String[] htmls) {
+        List<String> result = new ArrayList<>();
+        Arrays.stream(htmls).forEach(h -> result.add(h.split("\"")[0]));
+        this.ext_urls = result.toArray(String[]::new);
     }
     
     public void addScore(double score) {
-        this.score += score;
-    }
-    
-    public void setLinkScore() {
-        this.l_score = this.score / this.ext_urls.length;
+        this.score = score;
     }
 }
 
 class Solution {
-    Map<String, Link> linkMap = new HashMap<>();
+    Map<String, Web> result = new HashMap<>();
     
     public int solution(String word, String[] pages) {
-        /*
-            1. 기본 점수 = 검색어 등장 횟수(대소문자 무시)
-            2. 외부 링크수 = 다른 외부 페이지로 연결된 링크 개수
-            3. 링크 점수 = 해당 웹페이지 링크가 걸린 다른 웹페이지 기본 점수 / 외부 링크 수의 총합
-            4. 매칭 점수 = 기본 점수 + 링크 점수
-            
-            매칭 점수가 가장 높은 페이지 idx 구하기 -> 여러 개면 작은 번호
-        */
-        
-        int answer = 21;
-        
-        Pattern home_url_pattern = Pattern.compile("<meta property=\"og:url\" content=\"(\\S*)\"");
-        Pattern url_pattern = Pattern.compile("<a href=\"(\\S*)\"");
-        Pattern word_pattern = Pattern.compile("\\b(?i)" + word + "\\b");
-        Matcher home_url_matcher, url_matcher, word_matcher;
-        
         for (int i = 0; i < pages.length; i++) {
-            home_url_matcher = home_url_pattern.matcher(pages[i]);
-            url_matcher = url_pattern.matcher(pages[i]);
-            
-            String home_url = "";
-            
-            if (home_url_matcher.find()) {
-                home_url = home_url_matcher.group().split("=")[2].replaceAll("\"", "");
-            }
-            
-            Link link = new Link(i, home_url);
-            List<String> ext_urls = new ArrayList<>();
-            
-            while (url_matcher.find()) {
-                ext_urls.add(url_matcher.group().split("=")[1].replaceAll("\"", ""));
-            }
-            
-            link.addExtUrls(ext_urls);
-            
-            String body = pages[i].split("<body>")[1].split("</body>")[0].replaceAll("[0-9]", " ");
-            word_matcher = word_pattern.matcher(body);
-            int wordCnt = 0;
-            while (word_matcher.find()) wordCnt++;
-            link.addScore(wordCnt);
-            link.setLinkScore();
-            
-            linkMap.put(home_url, link);
-        }
-        
-        for (Link link : linkMap.values()) {
-            for (String extLink : link.ext_urls) {
-                if (linkMap.containsKey(extLink)) {
-                    linkMap.get(extLink).addScore(link.l_score);
+            String now = pages[i];
+            // URL 등록
+            String url = now.split("<meta property=\"og:url\" content=\"https://")[1].split("\"")[0];
+            Web web = new Web(i);
+            result.put(url, web);
+            // 외부 링크 등록
+            String[] splited = now.split("<a href=\"https://");
+            web.addExtUrls(Arrays.copyOfRange(splited, 1, splited.length));
+            // 기본 점수 계산
+            String[] tmp = now.split("<body>")[1].split("<a href=\"https://");
+            double score = 0;
+            for (String s : tmp) {
+                for (int j = 0; j <= s.length() - word.length(); j++) {
+                    if (isMatch(s, word, j, s.length())) score += 1;
                 }
             }
+            web.addScore(score);
         }
         
-        double max_score = -1;
-        for (Link link : linkMap.values()) {
-            if (max_score < link.score) {
-                max_score = link.score;
-                answer = link.idx;
-            } else if (max_score == link.score && answer > link.idx) {
-                answer = link.idx;
+        // 링크 점수 계산
+        for (String key : result.keySet()) {
+            Web web = result.get(key);
+            String[] ext = web.ext_urls;
+            for (String e : ext) {
+                Web otherWeb = result.get(e);
+                if (otherWeb == null) continue;
+                otherWeb.link_score += (web.score / ext.length);
+            }
+        }
+        
+        // 매칭 점수 계산
+        int answer = -1; double match_score = -1;
+        for (String key : result.keySet()) {
+            Web web = result.get(key);
+            double m_score = web.score + web.link_score;
+            if (match_score < m_score) {
+                match_score = m_score;
+                answer = web.idx;
             }
         }
         
         return answer;
+    }
+    
+    private boolean isMatch(String s, String word, int i, int len) {
+        String target = s.substring(i, i + word.length()).toLowerCase();
+        if (!target.equals(word.toLowerCase())) return false;
+        // 앞 글자 확인
+        if (i > 0 && Character.isLetter(s.charAt(i - 1))) return false;
+        // 뒤 글자 확인
+        if (i + word.length() < len && Character.isLetter(s.charAt(i + word.length()))) return false;
+        
+        return true;
     }
 }
