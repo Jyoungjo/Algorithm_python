@@ -1,81 +1,84 @@
 import java.util.*;
 
-class Solution {
-    final String[] sharp = {"C#", "D#", "E#", "F#", "G#", "A#", "B#", "c", "d", "e", "f", "g", "a", "b"};
-    Map<String, String> sharpMap = new HashMap<>();
-    final String NONE = "(None)";
-    StringBuilder sb = new StringBuilder();
+class Song {
+    int play_time;
+    String name;
+    String melody;
     
-    public String solution(String m, String[] musicinfos) {
-        String answer = "";
-        for (int i = 0; i < 7; i++) {
-            sharpMap.put(sharp[i], sharp[i + 7]);
-        }
-        
-        int max = 0;
-        for (String mInfo : musicinfos) {
-            String[] info = mInfo.split(",");
-            int playTime = convertToSec(info[1]) - convertToSec(info[0]);
-            if (isCorrect(info[3], playTime, m)) {
-                if (max < playTime) {
-                    max = playTime;
-                    answer = info[2];
-                }
+    public Song(String name) {
+        this.name = name;
+    }
+    
+    public void setPlayTime(String start, String end) {
+        this.play_time = convertToMin(end) - convertToMin(start);
+    }
+    
+    public void setMelody(String melody) {
+        StringBuilder sb = new StringBuilder();
+        int cnt = 0, idx = 0;
+        while (cnt < this.play_time) {
+            sb.append(melody.charAt((idx % melody.length())));
+            idx++;
+            if (melody.charAt((idx % melody.length())) == '#') {
+                char tmp = sb.charAt(sb.length() - 1);
+                sb.deleteCharAt(sb.length() - 1);
+                sb.append(String.valueOf(tmp).toLowerCase());
+                idx++;
             }
-            sb.setLength(0);
+            cnt++;
         }
         
-        return answer.isEmpty() ? NONE : answer;
+        this.melody = sb.toString();
     }
     
-    private boolean isCorrect(String sheet, int playTime, String m) {
-        String fullSheet = makeFullSheet(replaceToNote(sheet), playTime);
-        String replacedM = replaceToNote(m);
-        if (fullSheet.length() < replacedM.length()) return false;
-
-        int r = replacedM.length() - 1;
-
-        for (int i = 0; i <= r; i++) {
-            sb.append(fullSheet.charAt(i));
-        }
-
-        while (r < fullSheet.length() - 1) {
-            if (replacedM.equals(sb.toString())) return true;
-            sb.append(fullSheet.charAt(++r));
-            sb.deleteCharAt(0);
-        }
-
-        return replacedM.equals(sb.toString());
-    }
-    
-    private String makeFullSheet(String original, int playTime) {
-        for (int i = 0; i < playTime; i++) {
-            sb.append(original.charAt(i % original.length()));
-        }
-
-        String res = sb.toString();
-        sb.setLength(0);
-        return res;
-    }
-    
-    private String replaceToNote(String sheet) {
-        for (int i = 0; i < sheet.length() - 1; i++) {
-            char c = sheet.charAt(i);
-            if (sheet.charAt(i + 1) == '#') {
-                String tmp = sheet.substring(i, i + 2);
-                sb.append(sharpMap.get(tmp));
-                i++;
-            } else sb.append(c);
-        }
-        if (sheet.charAt((sheet.length() - 1)) != '#') sb.append(sheet.charAt(sheet.length() - 1));
-
-        String res = sb.toString();
-        sb.setLength(0);
-        return res;
-    }
-    
-    private int convertToSec(String time) {
+    private int convertToMin(String time) {
         String[] t = time.split(":");
         return Integer.parseInt(t[0]) * 60 + Integer.parseInt(t[1]);
+    }
+}
+
+class Solution {
+    public String solution(String m, String[] musicinfos) {
+        Song[] songs = new Song[musicinfos.length];
+        
+        for (int i = 0; i < musicinfos.length; i++) {
+            String[] info = musicinfos[i].split(",");
+            Song song = new Song(info[2]);
+            song.setPlayTime(info[0], info[1]);
+            song.setMelody(info[3]);
+            songs[i] = song;
+        }
+        
+        int pt = -1;
+        String answer = "";
+        String M = convert(m);
+        for (int i = 0; i < songs.length; i++) {
+            Song current = songs[i];
+            for (int j = 0; j < current.melody.length() - M.length() + 1; j++) {
+                String tmp = current.melody.substring(j, j + M.length());
+                
+                if (tmp.equals(M)) {
+                    if (pt < current.play_time) {
+                        pt = current.play_time;
+                        answer = current.name;
+                    }
+                }
+            }
+        }
+        
+        return answer.isEmpty() ? "(None)" : answer;
+    }
+    
+    private String convert(String m) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < m.length(); i++) {
+            if (i < m.length() - 1 && m.charAt(i + 1) == '#') {
+                sb.append(String.valueOf(m.charAt(i)).toLowerCase());
+                i++;
+            } else sb.append(m.charAt(i));
+        }
+        
+        return sb.toString();
     }
 }
