@@ -1,22 +1,19 @@
-class Solution
-{
-    public int solution(String s)
-    {
-        int answer = 1;
-        char[] cArr = s.toCharArray();
-        for (int len = s.length(); len >= 1; len--) {
-            for (int i = 0; i < s.length() - len + 1; i++) {
-                boolean isAnswer = true;
+class Solution {
+    public int solution(String s) {
+        // 길이 변화 7 ~ 1, 시작 idx 변화
+        for (int len = s.length(); len > 0; len--) {
+            for (int i = 0; i <= s.length() - len; i++) {
+                boolean isFind = true;
                 for (int j = i; j < i + len / 2; j++) {
-                    if (cArr[j] != cArr[len - 1 - j + 2 * i]) {
-                        isAnswer = false;
+                    if (s.charAt(j) != s.charAt(len - 1 - j + 2 * i)) {
+                        isFind = false;
                         break;
                     }
                 }
-                if (isAnswer) return len;
+                
+                if (isFind) return len;
             }
         }
-
-        return answer;
+        return 1;
     }
 }
