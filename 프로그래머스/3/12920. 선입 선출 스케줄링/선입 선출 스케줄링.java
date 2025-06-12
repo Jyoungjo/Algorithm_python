@@ -1,42 +1,39 @@
-import java.util.*;
-import java.util.stream.*;
-
 class Solution {
     public int solution(int n, int[] cores) {
-        int answer = 0;
+        // 작업 처리 시간 = 최대 50000 * 10000
+        // 특정 시간에 따라 누적 작업량이 단조 증가 -> 이분 탐색 + 스케줄링
+        
         if (n <= cores.length) return n;
         
-        int l = 1, r = 10000 * n; // 기준: 작업 처리 시간
-        int time = 0; long job = 0;
+        int l = 1, r = n * 10000;
+        int time = 0; long work = 0;
         while (l <= r) {
             int mid = (l + r) / 2;
             
-            //작업 처리 시간 동안 처리 가능한 일의 양
             long result = cal(mid, cores);
             if (result >= n) {
-                r = mid - 1;
                 time = mid;
-                job = result;
-            }
-            else l = mid + 1;
+                r = mid - 1;
+                work = result;
+            } else l = mid + 1;
         }
         
-        job -= n;
+        work -= n;
         for (int i = cores.length - 1; i >= 0; i--) {
             if (time % cores[i] == 0) {
-                if (job == 0) return i + 1;
-                job--;
+                if (work == 0) return i + 1;
+                work--;
             }
         }
         
-        return answer;
+        return -1;
     }
     
     private long cal(int time, int[] cores) {
-        long job = cores.length;
-        for (int c : cores) {
-            job += (time / c);
+        long res = cores.length;
+        for (int core : cores) {
+            res += (time / core);
         }
-        return job;
+        return res;
     }
 }
