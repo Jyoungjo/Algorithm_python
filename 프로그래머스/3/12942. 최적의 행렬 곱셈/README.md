@@ -1,10 +1,10 @@
 # [level 3] 최적의 행렬 곱셈 - 12942 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/12942#qna) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/12942) 
 
 ### 성능 요약
 
-메모리: 55.5 MB, 시간: 32.08 ms
+메모리: 72.5 MB, 시간: 39.76 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2025년 05월 05일 17:11:54
+2025년 06월 13일 18:16:04
 
 ### 문제 설명
 
