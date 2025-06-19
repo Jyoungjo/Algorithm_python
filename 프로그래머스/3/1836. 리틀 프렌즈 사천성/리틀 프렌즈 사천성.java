@@ -1,94 +1,92 @@
 import java.util.*;
 
 class Solution {
-    char BLANK = '.';
-    Map<Character, List<int[]>> pairMap = new HashMap<>();
+    final String IMPOSSIBLE = "IMPOSSIBLE";
+    final char BLANK = '.';
+    Map<Character, List<int[]>> tiles;
+    char[][] BOARD;
     int M, N;
-    StringBuilder sb = new StringBuilder();
     
     public String solution(int m, int n, String[] board) {
-        M = m; N = n;
-        char[][] newBoard = convertToArr(board);
-        findPair(newBoard);
-        return findVal(newBoard, new HashSet<>(pairMap.keySet()));
+        init(m, n, board);
+        return play();
     }
     
-    private char[][] convertToArr(String[] board) {
-        char[][] arr = new char[M][N];
+    private void init(int m, int n, String[] board) {
+        tiles = new HashMap<>();
+        M = m; N = n;
+        BOARD = new char[m][n];
         
-        for (int i = 0; i < M; i++) {
-            arr[i] = board[i].toCharArray();
+        for (int i = 0; i < m; i++) {
+            BOARD[i] = board[i].toCharArray();
         }
         
-        return arr;
-    }
-    
-    private void findPair(char[][] board) {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                char now = board[i][j];
+                char now = board[i].charAt(j);
                 if ('A' <= now && now <= 'Z') {
-                    pairMap.putIfAbsent(now, new ArrayList<>());
-                    pairMap.get(now).add(new int[]{i, j});
+                    tiles.putIfAbsent(now, new ArrayList<>());
+                    tiles.get(now).add(new int[]{i, j});
                 }
             }
         }
     }
     
-    private String findVal(char[][] board, Set<Character> remaining) {
-        List<Character> list = new LinkedList<>(remaining);
-        Collections.sort(list);
-
+    private String play() {
+        String result = "";
+        List<Character> alpha = new LinkedList<>(tiles.keySet());
+        Collections.sort(alpha);
+        
         int idx = 0;
-        while (!list.isEmpty()) {
-            char now = list.get(idx);
-            if (canRemove(board, now)) {
-                list.remove(idx);
-                remove(board, now, pairMap.get(now).get(0), pairMap.get(now).get(1));
+        while (!alpha.isEmpty()) {
+            char now = alpha.get(idx);
+            if (canRemove(now)) {
+                alpha.remove(idx);
+                remove(now);
                 idx = 0;
+                result += now;
             } else {
                 idx++;
-                if (idx == list.size()) return "IMPOSSIBLE";
+                if (idx == alpha.size()) return IMPOSSIBLE;
             }
         }
-
-        return sb.toString();
+        return result;
     }
-
-    private boolean canRemove(char[][] board, char target) {
-        int[] first = pairMap.get(target).get(0), second = pairMap.get(target).get(1);
-        int y1 = first[0], x1 = first[1], y2 = second[0], x2 = second[1];
-
-        if (x1 > x2) {
-            if (hasOnlyOneInTheRow(board, target, y1, y2, x2) && hasOnlyOneInTheColumn(board, target, x2, x1, y1)) return true;
-            if (hasOnlyOneInTheColumn(board, target, x2, x1, y2) && hasOnlyOneInTheRow(board, target, y1, y2, x1)) return true;
+    
+    private boolean canRemove(char alpha) {
+        List<int[]> coords = tiles.get(alpha);
+        int y1 = coords.get(0)[0], x1 = coords.get(0)[1], y2 = coords.get(1)[0], x2 = coords.get(1)[1];
+        
+        if (x1 < x2) {
+            if (isEmptyRow(alpha, y1, y2, x1) && isEmptyColumn(alpha, x1, x2, y2)) return true;
+            if (isEmptyRow(alpha, y1, y2, x2) && isEmptyColumn(alpha, x1, x2, y1)) return true;
         } else {
-            if (hasOnlyOneInTheRow(board, target, y1, y2, x1) && hasOnlyOneInTheColumn(board, target, x1, x2, y2)) return true;
-            if (hasOnlyOneInTheColumn(board, target, x1, x2, y1) && hasOnlyOneInTheRow(board, target, y1, y2, x2)) return true;
+            if (isEmptyRow(alpha, y1, y2, x2) && isEmptyColumn(alpha, x2, x1, y1)) return true;
+            if (isEmptyRow(alpha, y1, y2, x1) && isEmptyColumn(alpha, x2, x1, y2)) return true;
         }
-
+        
         return false;
     }
-
-    private boolean hasOnlyOneInTheRow(char[][] board, char target, int r1, int r2, int c) {
-        for (int i = r1; i <= r2; i++) {
-            if (board[i][c] != BLANK && board[i][c] != target) return false;
+    
+    private boolean isEmptyRow(char target, int r1, int r2, int c) {
+        for (int r = r1; r <= r2; r++) {
+            if (BOARD[r][c] != BLANK && BOARD[r][c] != target) return false;
         }
-
-        return true;
-    }
-
-    private boolean hasOnlyOneInTheColumn(char[][] board, char target, int c1, int c2, int r) {
-        for (int i = c1; i <= c2; i++) {
-            if (board[r][i] != BLANK && board[r][i] != target) return false;
-        }
-
+        
         return true;
     }
     
-    private void remove(char[][] board, char target, int[] first, int[] second) {
-        board[first[0]][first[1]] = BLANK;
-        board[second[0]][second[1]] = BLANK;
-        sb.append(target);
+    private boolean isEmptyColumn(char target, int c1, int c2, int r) {
+        for (int c = c1; c <= c2; c++) {
+            if (BOARD[r][c] != BLANK && BOARD[r][c] != target) return false;
+        }
+        
+        return true;
+    }
+    
+    private void remove(char target) {
+        List<int[]> coords = tiles.get(target);
+        BOARD[coords.get(0)[0]][coords.get(0)[1]] = BLANK;
+        BOARD[coords.get(1)[0]][coords.get(1)[1]] = BLANK;
     }
 }
