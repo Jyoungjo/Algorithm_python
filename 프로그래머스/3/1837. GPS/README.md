@@ -1,10 +1,10 @@
 # [level 3] GPS - 1837 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/1837#qna) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/1837) 
 
 ### 성능 요약
 
-메모리: 103 MB, 시간: 43.49 ms
+메모리: 113 MB, 시간: 42.33 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2025년 05월 09일 16:31:57
+2025년 06월 20일 16:14:56
 
 ### 문제 설명
 
