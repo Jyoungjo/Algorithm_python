@@ -1,83 +1,61 @@
 import java.util.*;
 
 class Node {
-    int idx, parentIdx;
-    long cnt;
+    int idx;
+    long weight;
+    Node parent;
     
-    public Node(int idx, int parentIdx, long cnt) {
+    public Node(int idx, long weight, Node parent) {
         this.idx = idx;
-        this.parentIdx = parentIdx;
-        this.cnt = cnt;
+        this.weight = weight;
+        this.parent = parent;
     }
 }
 
 class Solution {
-    List<List<Integer>> tree = new ArrayList<>();
-    boolean[] visited;
-    long[] b;
-    int size;
-    
+    List<Integer>[] tree;
+    int len;
+
     public long solution(int[] a, int[][] edges) {
-        init(a, edges);
-        return dfs(getLeafNode(0));
+        len = a.length;
+        tree = new List[len];
+        for (int i = 0; i < a.length; i++) {
+            tree[i] = new ArrayList<>();
+        }
+        for (int[] e : edges) {
+            tree[e[0]].add(e[1]);
+            tree[e[1]].add(e[0]);
+        }
+        
+        return dfs(0, a);
     }
     
-    private long dfs(int start) {
+    private long dfs(int start, int[] a) {
+        long result = 0;
         Deque<Node> stack = new ArrayDeque<>();
-        stack.push(new Node(start, start, 0));
+        boolean[] visited = new boolean[len];
+        stack.push(new Node(start, a[start], null));
         
         while (!stack.isEmpty()) {
-            Node current = stack.pop();
-            if (!visited[current.idx]) {
-                visited[current.idx] = true;
-                stack.push(current);                
+            Node now = stack.pop();
+            
+            if (!visited[now.idx]) {
+                visited[now.idx] = true;
+                stack.push(now);
                 
-                for (int next : tree.get(current.idx)) {
+                for (int next : tree[now.idx]) {
                     if (visited[next]) continue;
-                    stack.push(new Node(next, current.idx, 0));
+                    stack.push(new Node(next, a[next], now));
                 }
             } else {
-                // visited[current.idx] = false;
-                if (current.idx == start) {
-                    if (b[current.idx] != 0) return -1;
-                    return current.cnt + Math.abs(b[current.idx]);
-                }
+                if (now.idx == start) return now.weight == 0 ? result : -1;
                 
-                long weight = b[current.idx];
-                b[current.idx] = 0;
-                b[current.parentIdx] += weight;
-                stack.peekLast().cnt += Math.abs(weight);
+                now.parent.weight += now.weight;
+                result += Math.abs(now.weight);
+                now.weight = 0;
             }
         }
+        
         return -1;
-    }
-    
-    private int getLeafNode(int start) {
-        visited[start] = true;
-        
-        for (int next : tree.get(start)) {
-            if (visited[next]) continue;
-            int idx = getLeafNode(next);
-            visited[start] = false;
-            return idx;
-        }
-        
-        visited[start] = false;
-        return start;
-    }
-    
-    private void init(int[] a, int[][] edges) {
-        size = a.length;
-        visited = new boolean[size];
-        b = new long[size];
-        for (int i = 0; i < size; i++) {
-            b[i] = a[i];
-            tree.add(new ArrayList<>());
-        }
-        
-        for (int[] edge : edges) {
-            tree.get(edge[0]).add(edge[1]);
-            tree.get(edge[1]).add(edge[0]);
-        }
     }
 }
