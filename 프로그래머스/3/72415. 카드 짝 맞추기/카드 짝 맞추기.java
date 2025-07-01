@@ -1,80 +1,99 @@
 import java.util.*;
 
 class Solution {
-    int[][] cards = new int[7][4];
-    boolean[] bArr = new boolean[7];
-    boolean[] visited = new boolean[7];
-    int cardPairCnt = 0, answer = Integer.MAX_VALUE;
-    final int[] dr = {-1, 0, 1, 0}, dc = {0, 1, 0, -1};
-    final int R = 4, C = 4, MAX = 16;
+    Map<Integer, List<int[]>> cards = new HashMap<>();
+    int R, C, pairCnt;
+    boolean[] visited;
+    int answer = Integer.MAX_VALUE;
+    int[] dr = {-1, 0, 1, 0}, dc = {0, 1, 0, -1};
     
     public int solution(int[][] board, int r, int c) {
-        /*
-            현재 커서에서 카드로 이동 후 다음 같은 모양의 카드로 이동하는 과정 반복
-            첫 번째 카드를 고를 때, 카드 종류만큼 반복문에서 순회하고 이후 카드를 고르는 건 처음에 선택한 카드의 문양과 같은 카드를 고른다.
-        */
         init(board);
-        backTracking(board, new int[]{r, c}, 0, 0);
+        play(board, new int[]{r, c}, 0, 0);
         return answer;
     }
     
-    private void backTracking(int[][] board, int[] now, int depth, int cnt) {
-        if (depth == cardPairCnt) {
-            answer = Math.min(answer, cnt);
+    private void init(int[][] board) {
+        R = 4; C = 4;
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j < C; j++) {
+                if (board[i][j] != 0) {
+                    cards.putIfAbsent(board[i][j], new ArrayList<>());
+                    cards.get(board[i][j]).add(new int[]{i, j});
+                }
+            }
+        }
+        pairCnt = cards.keySet().size();
+        visited = new boolean[7];
+    }
+    
+    private void play(int[][] board, int[] now, int mv, int depth) {
+        if (depth == pairCnt) {
+            answer = Math.min(mv, answer);
             return;
         }
         
-        for (int i = 1; i <= 6; i++) {
-            if (!bArr[i] || visited[i]) continue;
-            visited[i] = true;
+        for (int cardNum : cards.keySet()) {
+            if (visited[cardNum]) continue;
             
-            int[] coord1 = new int[]{cards[i][0], cards[i][1]};
-            int[] coord2 = new int[]{cards[i][2], cards[i][3]};
+            visited[cardNum] = true;
+            int r = now[0], c = now[1];
+            List<int[]> cardList = cards.get(cardNum);
             
-            int move1 = countMove(board, coord1, coord2, now);
-            backTracking(board, coord2, depth + 1, cnt + move1);
-            board[cards[i][0]][cards[i][1]] = i;
-            board[cards[i][2]][cards[i][3]] = i;
+            int moveCnt1 = move(board, r, c, cardList.get(0), cardList.get(1));
+            play(board, cardList.get(1), mv + moveCnt1, depth + 1);
+            board[cardList.get(0)[0]][cardList.get(0)[1]] = cardNum;
+            board[cardList.get(1)[0]][cardList.get(1)[1]] = cardNum;
             
-            int move2 = countMove(board, coord2, coord1, now);
-            backTracking(board, coord1, depth + 1, cnt + move2);
-            board[cards[i][0]][cards[i][1]] = i;
-            board[cards[i][2]][cards[i][3]] = i;
             
-            visited[i] = false;
+            int moveCnt2 = move(board, r, c, cardList.get(1), cardList.get(0));
+            play(board, cardList.get(0), mv + moveCnt2, depth + 1);
+            board[cardList.get(1)[0]][cardList.get(1)[1]] = cardNum;
+            board[cardList.get(0)[0]][cardList.get(0)[1]] = cardNum;
+            
+            visited[cardNum] = false;
         }
     }
     
-    private int countMove(int[][] board, int[] start, int[] end, int[] cursor) {
-        int sum = 0;
-        sum += bfs(board, cursor, start);
-        sum += bfs(board, start, end);
+    private int move(int[][] board, int r, int c, int[] first, int[] second) {
+        int result = 0;
         
-        board[start[0]][start[1]] = 0;
-        board[end[0]][end[1]] = 0;
+        result += bfs(board, new int[]{r, c}, first);
+        result += bfs(board, first, second);
         
-        return sum + 2;
+        board[first[0]][first[1]] = 0;
+        board[second[0]][second[1]] = 0;
+        
+        return result + 2;
     }
     
-    private int bfs(int[][] board, int[] start, int[] end) {
-        int[][] matrix = new int[R][C];
+    private int bfs(int[][] board, int[] s, int[] e) {
+        int[][] result = new int[R][C];
         for (int i = 0; i < R; i++) {
-            Arrays.fill(matrix[i], MAX);
+            Arrays.fill(result[i], Integer.MAX_VALUE);
         }
-        matrix[start[0]][start[1]] = 0;
+        result[s[0]][s[1]] = 0;
         
-        Queue<int[]> q = new LinkedList<>();
-        q.add(start);
+        Deque<int[]> q = new ArrayDeque<>();
+        q.add(s);
         
         while (!q.isEmpty()) {
             int[] now = q.poll();
             int r = now[0], c = now[1];
             
             for (int d = 0; d < 4; d++) {
+                // 한칸 이동
                 int nr = r + dr[d], nc = c + dc[d];
                 if (!isWithinRange(nr, nc)) continue;
                 
-                recordMinVal(q, matrix, nr, nc, r, c);
+                if (result[nr][nc] > result[r][c] + 1) {
+                    result[nr][nc] = result[r][c] + 1;
+                    q.add(new int[]{nr, nc});
+                }
+                
+                // Ctrl 누르고 이동
+                
+                // 한칸 이동한 결과가 다른 카드라면 다음 방향
                 if (board[nr][nc] != 0) continue;
                 
                 while (board[nr][nc] == 0) {
@@ -83,42 +102,17 @@ class Solution {
                     nc += dc[d];
                 }
                 
-                recordMinVal(q, matrix, nr, nc, r, c);
-            }
-        }
-        
-        return matrix[end[0]][end[1]];
-    }
-    
-    private void recordMinVal(Queue<int[]> q, int[][] matrix, int nr, int nc, int r, int c) {
-        if (matrix[nr][nc] > matrix[r][c] + 1) {
-            matrix[nr][nc] = matrix[r][c] + 1;
-            q.add(new int[]{nr, nc});
-        }
-    }
-    
-    private boolean isWithinRange(int r, int c) {
-        return 0 <= r && r < R && 0 <= c && c < C;
-    }
-    
-    private void init(int[][] board) {
-        for (int i = 0; i < R; i++) {
-            for (int j = 0; j < C; j++) {
-                int num = board[i][j];
-                if (num == 0) continue;
-                if (!bArr[num]) {
-                    bArr[num] = true;
-                    cards[num][0] = i;
-                    cards[num][1] = j;
-                } else {
-                    cards[num][2] = i;
-                    cards[num][3] = j;
+                if (result[nr][nc] > result[r][c] + 1) {
+                    result[nr][nc] = result[r][c] + 1;
+                    q.add(new int[]{nr, nc});
                 }
             }
         }
         
-        for (int i = 1; i <= 6; i++) {
-            if (bArr[i]) cardPairCnt++;
-        }
+        return result[e[0]][e[1]];
+    }
+    
+    private boolean isWithinRange(int r, int c) {
+        return 0 <= r && r < R && 0 <= c && c < C;
     }
 }
