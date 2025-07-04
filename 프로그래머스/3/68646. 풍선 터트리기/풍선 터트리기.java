@@ -1,22 +1,22 @@
 class Solution {
     public int solution(int[] a) {
-        int answer = 0, l = a[0], r = a[a.length - 1];
-        int[] left = new int[a.length], right = new int[a.length];
-        for (int i = 1; i < a.length; i++) {
-            if (a[i] < l) l = a[i];
-            left[i] = l;
+        int len = a.length;
+        int[] left = new int[len], right = new int[len];
+        
+        left[len - 1] = a[len - 1];
+        for (int i = len - 2; i > 0; i--) {
+            left[i] = Math.min(left[i + 1], a[i]);
         }
-        for (int i = a.length - 2; i >= 0; i--) {
-            if (a[i] < r) r = a[i];
-            right[i] = r;
+        right[0] = a[0];
+        for (int i = 1; i < len - 1; i++) {
+            right[i] = Math.min(right[i - 1], a[i]);
         }
         
-        if (a.length == 1) return 1;
-        answer += 2; // 양 옆은 무조건 살 수 있기 때문에
-        for (int i = 1; i < a.length - 1; i++) {
-            if (a[i] > left[i] && a[i] > right[i]) continue;
-            answer++;
+        int answer = 2;
+        for (int i = 1; i < len - 1; i++) {
+            if (!(a[i] > left[i + 1] && a[i] > right[i - 1])) answer++;
         }
+        
         return answer;
     }
 }
