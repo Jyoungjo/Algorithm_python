@@ -2,80 +2,76 @@ import java.util.*;
 
 class Solution {
     final int[] dy = {-1, 0, 1, 0}, dx = {0, 1, 0, -1};
-    final int[] ady = {-1, 1, 1, -1}, adx = {1, 1, -1, -1};
     int R, C;
     
     public int solution(int[][] board) {
-        R = board.length;
-        C = board[0].length;
-        return bfs(board, new int[]{0, 0, 0, 1, 0, 0});
+        R = board.length; C = board[0].length;
+        return move(board);
     }
     
-    private int bfs(int[][] board, int[] start) {
+    private int move(int[][] board) {
         Queue<int[]> q = new LinkedList<>();
-        q.add(start);
         boolean[][][] visited = new boolean[R][C][2];
+        q.add(new int[]{0, 0, 0, 1, 0, 0});
         
         while (!q.isEmpty()) {
             int[] now = q.poll();
-            int y1 = now[0], x1 = now[1], y2 = now[2], x2 = now[3], cnt = now[4], dir = now[5];
+            int ly = now[0], lx = now[1], ry = now[2], rx = now[3], cnt = now[4], dir = now[5];
             
-            // 좌표가 범위를 벗어난 경우
-            if (isWithoutRange(y1, x1) || isWithoutRange(y2, x2)) continue;
-            // 벽이 있는 경우
-            if (board[y1][x1] == 1 || board[y2][x2] == 1) continue;
-            // 이미 방문한 경우
-            if (visited[y1][x1][dir] && visited[y2][x2][dir]) continue;
+            // 이동하려는 곳이 영역 밖일 경우 continue
+            if (!isWithinRange(ly, lx) || !isWithinRange(ry, rx)) continue;
             
-            if ((y1 == R - 1 && x1 == C - 1) || (y2 == R - 1 && x2 == C - 1)) return cnt;
+            // 이동하려는 곳이 벽일 경우 continue
+            if (board[ly][lx] == 1 || board[ry][rx] == 1) continue;
             
-            visited[y1][x1][dir] = true;
-            visited[y2][x2][dir] = true;
+            // 이동하려는 곳이 이미 방문한 경우 continue
+            if (visited[ly][lx][dir] && visited[ry][rx][dir]) continue;
             
-            // 정방향 이동 (상하좌우)
-            move(q, board, visited, new int[]{y1, x1}, new int[]{y2, x2}, dir, cnt);
+            if ((ly == R - 1 && lx == C - 1) || (ry == R - 1 && rx == C - 1)) return cnt;
             
-            // 회전 (축 기준 90도 회전)
-            rotate(q, board, visited, new int[]{y1, x1}, new int[]{y2, x2}, dir, cnt);
+            visited[ly][lx][dir] = true;
+            visited[ry][rx][dir] = true;
+            
+            // 이동
+            for (int d = 0; d < 4; d++) {
+                int nly = ly + dy[d], nlx = lx + dx[d], nry = ry + dy[d], nrx = rx + dx[d];
+                q.add(new int[]{nly, nlx, nry, nrx, cnt + 1, dir});
+            }
+            
+            // 회전
+            if (dir == 0) { // 가로
+                // 회전 방향 = 위쪽
+                if (ry - 1 >= 0 && isAllBlank(board, ly - 1, lx, ry - 1, rx)) {
+                    q.add(new int[]{ry - 1, lx, ly, lx, cnt + 1, 1});
+                    q.add(new int[]{ly - 1, rx, ry, rx, cnt + 1, 1});
+                }
+                // 회전 방향 = 아래쪽
+                if (ry + 1 < R && isAllBlank(board, ly + 1, lx, ry + 1, rx)) {
+                    q.add(new int[]{ly, lx, ry + 1, lx, cnt + 1, 1});
+                    q.add(new int[]{ry, rx, ly + 1, rx, cnt + 1, 1});
+                }
+            } else { // 세로
+                // 회전 방향 = 왼쪽
+                if (rx - 1 >= 0 && isAllBlank(board, ly, lx - 1, ry, rx - 1)) {
+                    q.add(new int[]{ly, rx - 1, ly, lx, cnt + 1, 0});
+                    q.add(new int[]{ry, lx - 1, ry, rx, cnt + 1, 0});
+                }
+                // 회전 방향 = 오른쪽
+                if (rx + 1 < C && isAllBlank(board, ly, lx + 1, ry, rx + 1)) {
+                    q.add(new int[]{ly, lx, ly, rx + 1, cnt + 1, 0});
+                    q.add(new int[]{ry, rx, ry, lx + 1, cnt + 1, 0});
+                }
+            }
         }
         
         return 0;
     }
     
-    private void rotate(Queue<int[]> q, int[][] board, boolean[][][] visited, int[] c1, int[] c2, int dir, int cnt) {
-        int y1 = c1[0], x1 = c1[1], y2 = c2[0], x2 = c2[1];
-        
-        if (dir == 1) {
-            if (x1 - 1 >= 0 && board[y1][x1 - 1] == 0 && board[y2][x2 - 1] == 0) {
-                q.add(new int[]{y1, x1, y1, x2 - 1, cnt + 1, 0});
-                q.add(new int[]{y2, x1 - 1, y2, x2, cnt + 1, 0});
-            }
-            if (x1 + 1 < C && board[y1][x1 + 1] == 0 && board[y2][x2 + 1] == 0) {
-                q.add(new int[]{y1, x1, y1, x2 + 1, cnt + 1, 0});
-                q.add(new int[]{y2, x1 + 1, y2, x2, cnt + 1, 0});
-            }
-        } else {
-            if (y1 - 1 >= 0 && board[y1 - 1][x1] == 0 && board[y2 - 1][x2] == 0) {
-                q.add(new int[]{y1, x1, y2 - 1, x1, cnt + 1, 1});
-                q.add(new int[]{y1 - 1, x2, y2, x2, cnt + 1, 1});
-            }
-            if (y1 + 1 < R && board[y1 + 1][x1] == 0 && board[y2 + 1][x2] == 0) {
-                q.add(new int[]{y1, x1, y2 + 1, x1, cnt + 1, 1});
-                q.add(new int[]{y1 + 1, x2, y2, x2, cnt + 1, 1});
-            }
-        }
+    private boolean isWithinRange(int y, int x) {
+        return 0 <= y && y < R && 0 <= x && x < C;
     }
     
-    private void move(Queue<int[]> q, int[][] board, boolean[][][] visited, int[] c1, int[] c2, int dir, int cnt) {
-        int y1 = c1[0], x1 = c1[1], y2 = c2[0], x2 = c2[1];
-        
-        for (int d = 0; d < 4; d++) {
-            int ny1 = y1 + dy[d], nx1 = x1 + dx[d], ny2 = y2 + dy[d], nx2 = x2 + dx[d];
-            q.add(new int[]{ny1, nx1, ny2, nx2, cnt + 1, dir});
-        }
-    }
-    
-    private boolean isWithoutRange(int y, int x) {
-        return y < 0 || y >= R || x < 0 || x >= C;
+    private boolean isAllBlank(int[][] board, int y1, int x1, int y2, int x2) {
+        return board[y1][x1] == 0 && board[y2][x2] == 0;
     }
 }
