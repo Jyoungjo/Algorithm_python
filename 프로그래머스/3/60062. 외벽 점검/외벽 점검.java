@@ -1,42 +1,42 @@
 import java.util.*;
 
 class Solution {
-    int[] weak;
-    int answer = Integer.MAX_VALUE;
+    int len;
+    int[] w;
+    int answer = 987654321;
     
     public int solution(int n, int[] weak, int[] dist) {
-        this.weak = new int[weak.length * 2];
-        for (int i = 0; i < weak.length; i++) {
-            this.weak[i] = weak[i];
-            this.weak[i + weak.length] = weak[i] + n;
+        len = weak.length;
+        w = new int[len * 2];
+        for (int i = 0; i < len; i++) {
+            w[i] = weak[i];
+            w[i + len] = weak[i] + n;
         }
-        
-        permutation(new ArrayList<>(), dist, 0);
-        
-        return answer == Integer.MAX_VALUE ? -1 : answer;
+        permutations(dist, 0, new ArrayList<>());
+        return answer == 987654321 ? -1 : answer;
     }
     
-    private void permutation(List<Integer> list, int[] dist, int maskNum) {
+    private void permutations(int[] dist, int mask, List<Integer> list) {
         if (list.size() >= answer) return;
         
         for (int i = 0; i < dist.length; i++) {
-            if ((maskNum & (1 << i)) != 0) continue;
+            if ((mask & (1 << i)) != 0) continue;
             List<Integer> tmp = new ArrayList<>(list);
             tmp.add(dist[i]);
-            checkIfCanOver(tmp);
-            permutation(tmp, dist, maskNum | (1 << i));
+            exe(tmp);
+            permutations(dist, mask | (1 << i), tmp);
         }
     }
     
-    private void checkIfCanOver(List<Integer> list) {
-        for (int i = 0; i < this.weak.length / 2; i++) {
+    private void exe(List<Integer> list) {
+        for (int i = 0; i < len; i++) {
             int idx = i;
-            for (int distance : list) {
-                int pos = this.weak[idx] + distance;
-                while (idx < this.weak.length && pos >= this.weak[idx]) idx++;
+            for (int n : list) {
+                int pos = w[idx] + n;
+                while (idx < w.length && pos >= w[idx]) idx++;
             }
             
-            if (idx - i >= this.weak.length / 2) {
+            if (idx - i >= len) {
                 answer = Math.min(answer, list.size());
                 return;
             }
