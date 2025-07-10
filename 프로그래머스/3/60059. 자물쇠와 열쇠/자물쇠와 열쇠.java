@@ -1,39 +1,30 @@
 import java.util.*;
 
 class Solution {
+    int M, N;
+    
     public boolean solution(int[][] key, int[][] lock) {
-        int len = lock.length + (key.length - 1) * 2;
-        int[][] exLock = new int[len][len];
+        M = key.length; N = lock.length;
+        Set<String> lockSet = new HashSet<>();
+        List<int[]> keyList = new ArrayList<>();
         
-        for (int i = key.length - 1; i < key.length - 1 + lock.length; i++) {
-            for (int j = key.length - 1; j < key.length - 1 + lock.length; j++) {
-                exLock[i][j] = lock[i - (key.length - 1)][j - (key.length - 1)];
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < M; j++) {
+                if (key[i][j] == 1) keyList.add(new int[]{i, j});
             }
         }
         
-        for (int r = 0; r < 4; r++) {
-            if (isMatch(key, exLock, lock.length)) return true;
-            rotate(key);
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if (lock[i][j] == 0) lockSet.add(i + "," + j);
+            }
         }
         
-        return false;
-    }
-    
-    private boolean isMatch(int[][] key, int[][] exLock, int lockLen) {
-        for (int dy = 0; dy < key.length - 1 + lockLen; dy++) {
-            for (int dx = 0; dx < key.length - 1 + lockLen; dx++) {
-                for (int y = 0; y < key.length; y++) {
-                    for (int x = 0; x < key.length; x++) {
-                        exLock[y + dy][x + dx] += key[y][x];
-                    }
-                }
-                
-                if (isSolved(exLock, key.length - 1, key.length - 1 + lockLen)) return true;
-                
-                for (int y = 0; y < key.length; y++) {
-                    for (int x = 0; x < key.length; x++) {
-                        exLock[y + dy][x + dx] -= key[y][x];
-                    }
+        for (int rot = 0; rot < 4; rot++) {
+            List<int[]> rotated = rotate(keyList, rot);
+            for (int dy = -M + 1; dy < N; dy++) {
+                for (int dx = -M + 1; dx < N; dx++) {
+                    if (isMatch(rotated, lock, lockSet, dy, dx)) return true;
                 }
             }
         }
@@ -41,29 +32,36 @@ class Solution {
         return false;
     }
     
-    private boolean isSolved(int[][] exLock, int s, int e) {
-        for (int i = s; i < e; i++) {
-            for (int j = s; j < e; j++) {
-                if (exLock[i][j] != 1) return false;
+    private List<int[]> rotate(List<int[]> key, int rot) {
+        List<int[]> result = new ArrayList<>();
+        for (int[] k : key) {
+            int y = k[0], x = k[1];
+            for (int i = 0; i < rot; i++) {
+                int tmp = y; y = x; x = M - 1 - tmp;
             }
+            result.add(new int[]{y, x});
+        }
+        return result;
+    }
+    
+    private boolean isMatch(List<int[]> key, int[][] lock, Set<String> lockSet, int dy, int dx) {
+        Set<String> keySet = new HashSet<>();
+        for (int[] k : key) keySet.add((k[0] + dy) + "," + (k[1] + dx));
+        
+        for (String l : lockSet) {
+            if (!keySet.contains(l)) return false;
+        }
+        
+        for (String k : keySet) {
+            String[] tmp = k.split(",");
+            int y = Integer.parseInt(tmp[0]), x = Integer.parseInt(tmp[1]);
+            if (isWithinRange(y, x) && lock[y][x] == 1) return false;
         }
         
         return true;
     }
     
-    private void rotate(int[][] key) {
-        int[][] tmp = new int[key.length][key.length];
-        
-        for (int i = 0; i < key.length; i++) {
-            for (int j = 0; j < key.length; j++) {
-                tmp[i][j] = key[j][key.length - 1 - i];
-            }
-        }
-        
-        for (int i = 0; i < key.length; i++) {
-            for (int j = 0; j < key.length; j++) {
-                key[i][j] = tmp[i][j];
-            }
-        }
+    private boolean isWithinRange(int y, int x) {
+        return 0 <= y && y < N && 0 <= x && x < N;
     }
 }
