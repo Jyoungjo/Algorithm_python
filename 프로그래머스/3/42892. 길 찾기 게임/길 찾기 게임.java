@@ -1,63 +1,76 @@
 import java.util.*;
 
 class Node {
-    int x, y, idx;
+    int idx, y, x;
     Node left, right;
     
-    public Node(int x, int y, int idx) {
-        this.x = x;
-        this.y = y;
+    public Node(int idx, int y, int x) {
         this.idx = idx;
+        this.y = y;
+        this.x = x;
     }
     
-    public void addNode(Node child) {
-        if (this.x > child.x) { // 왼쪽 자식
-            if (this.left == null) this.left = child;
-            else this.left.addNode(child);
-        } else { // 오른쪽 자식
-            if (this.right == null) this.right = child;
-            else this.right.addNode(child);
+    public void addNode(Node node) {
+        if (this.x > node.x) {
+            if (this.left == null) this.left = node;
+            else this.left.addNode(node);
+        } else {
+            if (this.right == null) this.right = node;
+            else this.right.addNode(node);
         }
     }
 }
 
 class Solution {
+    int idx;
+    Node[] nodes;
     int[][] answer;
-    int idx = 0;
     
     public int[][] solution(int[][] nodeinfo) {
-        Node[] nodes = new Node[nodeinfo.length];
-        for (int i = 0; i < nodeinfo.length; i++) {
-            int[] co = nodeinfo[i];
-            nodes[i] = new Node(co[0], co[1], i + 1);
+        int len = nodeinfo.length;
+        
+        // 1. idx 담은 노드 배열 생성
+        nodes = new Node[len];
+        for (int i = 0; i < len; i++) {
+            nodes[i] = new Node(i + 1, nodeinfo[i][1], nodeinfo[i][0]);
         }
         
-        Arrays.sort(nodes, (o1, o2) -> {
-            if (o2.y == o1.y) return o1.x - o2.x;
+        // 2. 배열 정렬 y 내림차순, x 오름차순
+        Arrays.sort(nodes, (o1, o2) ->  {
+            if (o1.y == o2.y) return o1.x - o2.x;
             return o2.y - o1.y;
         });
         
-        Node root = nodes[0];
-        for (int i = 1; i < nodes.length; i++) {
-            root.addNode(nodes[i]);
+        // 노드 등록
+        Node rootNode = null;
+        for (int i = 0; i < len; i++) {
+            if (rootNode == null) {
+                rootNode = nodes[i];
+                continue;
+            }
+            
+            rootNode.addNode(nodes[i]);
         }
         
-        answer = new int[2][nodes.length];
-        preOrder(root);
+        // 4. 노드 순회
+        answer = new int[2][len];
         idx = 0;
-        postOrder(root);
+        preorder(answer[0], rootNode);
+        idx = 0;
+        postorder(answer[1], rootNode);
+        
         return answer;
     }
     
-    private void preOrder(Node node) {
-        answer[0][idx++] = node.idx;
-        if (node.left != null) preOrder(node.left);
-        if (node.right != null) preOrder(node.right);
+    private void preorder(int[] arr, Node node) {
+        arr[idx++] = node.idx;
+        if (node.left != null) preorder(arr, node.left);
+        if (node.right != null) preorder(arr, node.right);
     }
     
-    private void postOrder(Node node) {
-        if (node.left != null) postOrder(node.left);
-        if (node.right != null) postOrder(node.right);
-        answer[1][idx++] = node.idx;
+    private void postorder(int[] arr, Node node) {
+        if (node.left != null) postorder(arr, node.left);
+        if (node.right != null) postorder(arr, node.right);
+        arr[idx++] = node.idx;
     }
 }
