@@ -1,27 +1,34 @@
 class Solution {
     public int solution(int n, int[] stations, int w) {
+        int left = 1;
         int answer = 0;
-        int start = 1;
-        for (int station : stations) {
-            int end = station - (w + 1);
-            if (end < start) {
-                start = station + w + 1;
+        
+        for (int st : stations) {
+            int right = st - w - 1;
+            if (right < left) {
+                left = st + w + 1;
                 continue;
             }
             
-            int len = end - start + 1;
-            if (len <= 2 * w + 1) answer++;
-            else answer += (int) Math.ceil((double) len / (2 * w + 1));
+            int range = 2 * w + 1, len = right - left + 1;
+            answer += addTower(len, range);
             
-            start = station + w + 1;
+            left = st + w + 1;
         }
         
-        if (start <= n) {
-            int l = n - start + 1;
-            if (l <= 2 * w + 1) answer++;
-            else answer += (int) Math.ceil((double) l / (2 * w + 1));
+        if (n >= left) {
+            int range = 2 * w + 1, len = n - left + 1;
+            answer += addTower(len, range);
         }
         
         return answer;
+    }
+    
+    private int addTower(int len, int range) {
+        if (len <= range) return 1;
+        else {
+            double res = len / range;
+            return len % range > 0 ? (int) res + 1 : (int) res;
+        }
     }
 }
