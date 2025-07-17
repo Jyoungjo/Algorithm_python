@@ -1,19 +1,20 @@
 class Solution {
     public int solution(String s) {
-        // 길이 변화 7 ~ 1, 시작 idx 변화
-        for (int len = s.length(); len > 0; len--) {
-            for (int i = 0; i <= s.length() - len; i++) {
-                boolean isFind = true;
-                for (int j = i; j < i + len / 2; j++) {
-                    if (s.charAt(j) != s.charAt(len - 1 - j + 2 * i)) {
-                        isFind = false;
+        int answer = 0;
+        char[] arr = s.toCharArray();
+        for (int len = s.length(); len >= 1; len--) {
+            for (int idx = 0; idx <= s.length() - len; idx++) {
+                boolean isPalindrome = true;
+                for (int i = idx; i < idx + len / 2; i++) {
+                    if (arr[i] != arr[idx + len - 1 - (i - idx)]) {
+                        isPalindrome = false;
                         break;
                     }
                 }
-                
-                if (isFind) return len;
+                if (isPalindrome) return len;
             }
         }
-        return 1;
+        
+        return answer;
     }
 }
