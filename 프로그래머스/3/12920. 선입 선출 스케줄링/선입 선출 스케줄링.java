@@ -1,39 +1,42 @@
 class Solution {
     public int solution(int n, int[] cores) {
-        // 작업 처리 시간 = 최대 50000 * 10000
-        // 특정 시간에 따라 누적 작업량이 단조 증가 -> 이분 탐색 + 스케줄링
-        
+        int answer = 0;
         if (n <= cores.length) return n;
         
-        int l = 1, r = n * 10000;
-        int time = 0; long work = 0;
+        int l = 1, r = 10000 * n, time = 0;
+        long job = 0;
         while (l <= r) {
-            int mid = (l + r) / 2;
+            int mid = (l + r) / 2; // 모든 코어가 작업을 끝내는 시간
             
-            long result = cal(mid, cores);
+            long result = cal(cores, mid); // 모든 코어가 작업을 끝냈을 때 작업량
             if (result >= n) {
+                job = result;
                 time = mid;
                 r = mid - 1;
-                work = result;
             } else l = mid + 1;
         }
         
-        work -= n;
+        System.out.printf("job: %d, time: %d\n", job, time);
+        
+        job -= n;
         for (int i = cores.length - 1; i >= 0; i--) {
             if (time % cores[i] == 0) {
-                if (work == 0) return i + 1;
-                work--;
+                if (job == 0) {
+                    answer = i + 1;
+                    break;
+                }
+                job--;
             }
         }
         
-        return -1;
+        return answer;
     }
     
-    private long cal(int time, int[] cores) {
-        long res = cores.length;
-        for (int core : cores) {
-            res += (time / core);
+    private long cal(int[] cores, int time) {
+        long result = cores.length;
+        for (int c : cores) {
+            result += (time / c);
         }
-        return res;
+        return result;
     }
 }
