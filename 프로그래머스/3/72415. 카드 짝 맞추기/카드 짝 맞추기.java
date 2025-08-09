@@ -1,118 +1,114 @@
 import java.util.*;
 
 class Solution {
-    Map<Integer, List<int[]>> cards = new HashMap<>();
-    int R, C, pairCnt;
-    boolean[] visited;
-    int answer = Integer.MAX_VALUE;
-    int[] dr = {-1, 0, 1, 0}, dc = {0, 1, 0, -1};
+    final int[] dy = {-1, 0, 1, 0}, dx = {0, 1, 0, -1};
+    Map<Integer, List<int[]>> cardMap = new HashMap<>();
+    Set<Integer> visited = new HashSet<>();
+    int[][] BOARD;
+    int R, C;
+    int answer = 987654321, limit;
     
     public int solution(int[][] board, int r, int c) {
-        init(board);
-        play(board, new int[]{r, c}, 0, 0);
-        return answer;
-    }
-    
-    private void init(int[][] board) {
-        R = 4; C = 4;
+        BOARD = board;
+        R = board.length; C = board[0].length;
+        
         for (int i = 0; i < R; i++) {
             for (int j = 0; j < C; j++) {
                 if (board[i][j] != 0) {
-                    cards.putIfAbsent(board[i][j], new ArrayList<>());
-                    cards.get(board[i][j]).add(new int[]{i, j});
+                    cardMap.putIfAbsent(board[i][j], new ArrayList<>());
+                    cardMap.get(board[i][j]).add(new int[]{i, j});
                 }
             }
         }
-        pairCnt = cards.keySet().size();
-        visited = new boolean[7];
+        
+        limit = cardMap.keySet().size();
+        recur(r, c, 0, 0);
+        return answer;
     }
     
-    private void play(int[][] board, int[] now, int mv, int depth) {
-        if (depth == pairCnt) {
-            answer = Math.min(mv, answer);
+    private void recur(int r, int c, int depth, int result) {
+        if (depth == limit) {
+            answer = Math.min(result, answer);
             return;
         }
         
-        for (int cardNum : cards.keySet()) {
-            if (visited[cardNum]) continue;
+        for (int key : cardMap.keySet()) {
+            if (visited.contains(key)) continue;
             
-            visited[cardNum] = true;
-            int r = now[0], c = now[1];
-            List<int[]> cardList = cards.get(cardNum);
+            visited.add(key);
             
-            int moveCnt1 = move(board, r, c, cardList.get(0), cardList.get(1));
-            play(board, cardList.get(1), mv + moveCnt1, depth + 1);
-            board[cardList.get(0)[0]][cardList.get(0)[1]] = cardNum;
-            board[cardList.get(1)[0]][cardList.get(1)[1]] = cardNum;
+            List<int[]> coords = cardMap.get(key);
+            int[] first = coords.get(0), second = coords.get(1);
             
+            int mv1 = move(r, c, first, second);
+            removePair(key);
+            recur(second[0], second[1], depth + 1, result + mv1);
+            restorePair(key);
             
-            int moveCnt2 = move(board, r, c, cardList.get(1), cardList.get(0));
-            play(board, cardList.get(0), mv + moveCnt2, depth + 1);
-            board[cardList.get(1)[0]][cardList.get(1)[1]] = cardNum;
-            board[cardList.get(0)[0]][cardList.get(0)[1]] = cardNum;
+            int mv2 = move(r, c, second, first);
+            removePair(key);
+            recur(first[0], first[1], depth + 1, result + mv2);
+            restorePair(key);
             
-            visited[cardNum] = false;
+            visited.remove(key);
         }
     }
     
-    private int move(int[][] board, int r, int c, int[] first, int[] second) {
-        int result = 0;
-        
-        result += bfs(board, new int[]{r, c}, first);
-        result += bfs(board, first, second);
-        
-        board[first[0]][first[1]] = 0;
-        board[second[0]][second[1]] = 0;
-        
-        return result + 2;
+    private int move(int r, int c, int[] dest1, int[] dest2) {
+        int cnt1 = bfs(new int[]{r, c}, dest1), cnt2 = bfs(dest1, dest2);
+        return cnt1 + cnt2 + 2;
     }
     
-    private int bfs(int[][] board, int[] s, int[] e) {
-        int[][] result = new int[R][C];
-        for (int i = 0; i < R; i++) {
-            Arrays.fill(result[i], Integer.MAX_VALUE);
-        }
-        result[s[0]][s[1]] = 0;
-        
-        Deque<int[]> q = new ArrayDeque<>();
-        q.add(s);
+    private int bfs(int[] start, int[] end) {
+        Queue<int[]> q = new ArrayDeque<>();
+        q.add(start);
+        int[][] minMv = new int[R][C];
+        for (int i = 0; i < R; i++) Arrays.fill(minMv[i], 987654321);
+        minMv[start[0]][start[1]] = 0;
         
         while (!q.isEmpty()) {
             int[] now = q.poll();
-            int r = now[0], c = now[1];
+            int y = now[0], x = now[1];
             
             for (int d = 0; d < 4; d++) {
-                // 한칸 이동
-                int nr = r + dr[d], nc = c + dc[d];
-                if (!isWithinRange(nr, nc)) continue;
+                int ny = y + dy[d], nx = x + dx[d];
+                if (!isRange(ny, nx)) continue;
+                record(minMv, q, ny, nx, y, x);
                 
-                if (result[nr][nc] > result[r][c] + 1) {
-                    result[nr][nc] = result[r][c] + 1;
-                    q.add(new int[]{nr, nc});
+                if (BOARD[ny][nx] != 0) continue;
+                while (BOARD[ny][nx] == 0) {
+                    if (!isRange(ny + dy[d], nx + dx[d])) break;
+                    ny += dy[d];
+                    nx += dx[d];
                 }
                 
-                // Ctrl 누르고 이동
-                
-                // 한칸 이동한 결과가 다른 카드라면 다음 방향
-                if (board[nr][nc] != 0) continue;
-                
-                while (board[nr][nc] == 0) {
-                    if (!isWithinRange(nr + dr[d], nc + dc[d])) break;
-                    nr += dr[d];
-                    nc += dc[d];
-                }
-                
-                if (result[nr][nc] > result[r][c] + 1) {
-                    result[nr][nc] = result[r][c] + 1;
-                    q.add(new int[]{nr, nc});
-                }
+                record(minMv, q, ny, nx, y, x);
             }
         }
         
-        return result[e[0]][e[1]];
+        return minMv[end[0]][end[1]];
     }
     
-    private boolean isWithinRange(int r, int c) {
-        return 0 <= r && r < R && 0 <= c && c < C;
+    private void record(int[][] arr, Queue<int[]> q, int ny, int nx, int y, int x) {
+        if (arr[ny][nx] > arr[y][x] + 1) {
+            arr[ny][nx] = arr[y][x] + 1;
+            q.add(new int[]{ny, nx});
+        }
+    }
+    
+    private boolean isRange(int y, int x) {
+        return 0 <= y && y < R && 0 <= x && x < C;
+    }
+    
+    private void removePair(int key) {
+        int[] a1 = cardMap.get(key).get(0), a2 = cardMap.get(key).get(1);
+        BOARD[a1[0]][a1[1]] = 0;
+        BOARD[a2[0]][a2[1]] = 0;
+    }
+    
+    private void restorePair(int key) {
+        int[] a1 = cardMap.get(key).get(0), a2 = cardMap.get(key).get(1);
+        BOARD[a1[0]][a1[1]] = key;
+        BOARD[a2[0]][a2[1]] = key;
     }
 }
