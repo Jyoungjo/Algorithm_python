@@ -1,51 +1,41 @@
 class Solution {
     public String solution(String play_time, String adv_time, String[] logs) {
-        // 누적 재생시간이 가장 많이 나오는 곳에 광고 삽입
-        // return 광고 시작 시각 -> 누적 재생시간 많은 곳 여러개면 가장 빠른 시작 시각
-        int pt = convertToSec(play_time);
-        int at = convertToSec(adv_time);
-        int[] video = new int[pt + 1];
-        
+        int[] time_log = new int[360000];
         for (String log : logs) {
-            String[] l = log.split("-");
-            int s = convertToSec(l[0]), e = convertToSec(l[1]);
-            for (int i = s; i < e; i++) video[i]++;
+            String[] times = log.split("-");
+            int s = convertToSec(times[0]), e = convertToSec(times[1]);
+            
+            for (int i = s; i < e; i++) time_log[i]++;
         }
         
-        long tot = 0;
-        for (int i = 0; i < at; i++) tot += video[i];
-        
-        long max = tot;
+        int pt = convertToSec(play_time), at = convertToSec(adv_time);
+        long acc_sum = 0;
         int start_time = 0;
-        for (int i = at; i <= pt; i++) {
-            tot += video[i];
-            tot -= video[i - at];
-            
-            if (max < tot) {
-                max = tot;
-                start_time = i - at + 1;
+        for (int i = 0; i < at; i++) acc_sum += time_log[i];
+        
+        long max = acc_sum;
+        for (int end_time = at; end_time <= pt; end_time++) {
+            acc_sum += time_log[end_time] - time_log[end_time - at];
+            if (max < acc_sum) {
+                max = acc_sum;
+                start_time = end_time - at + 1;
             }
         }
         
         return convertToString(start_time);
     }
     
-    private String convertToString(int start_time) {
-        int h = start_time / 3600;
-        int m = (start_time % 3600) / 60;
-        int s = (start_time % 3600) % 60;
+    private int convertToSec(String time) {
+        String[] t = time.split(":");
+        return Integer.parseInt(t[0]) * 3600 + Integer.parseInt(t[1]) * 60 + Integer.parseInt(t[2]);
+    }
+    
+    private String convertToString(int sec) {
+        int h = sec / 3600, m = (sec % 3600) / 60, s = (sec % 3600) % 60;
         return addZero(h) + h + ":" + addZero(m) + m + ":" + addZero(s) + s;
     }
     
-    private String addZero(int time) {
-        return time < 10 ? "0" : "";
-    }
-    
-    private int convertToSec(String time) {
-        String[] t = time.split(":");
-        int h = Integer.parseInt(t[0]) * 3600;
-        int m = Integer.parseInt(t[1]) * 60;
-        int s = Integer.parseInt(t[2]);
-        return h + m + s;
+    private String addZero(int t) {
+        return t >= 10 ? "" : "0";
     }
 }
