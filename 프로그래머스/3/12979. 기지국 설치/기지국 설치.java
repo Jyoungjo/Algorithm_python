@@ -1,34 +1,26 @@
 class Solution {
     public int solution(int n, int[] stations, int w) {
-        int left = 1;
-        int answer = 0;
-        
-        for (int st : stations) {
-            int right = st - w - 1;
-            if (right < left) {
-                left = st + w + 1;
+        int answer = 0, start = 1;
+        for (int i = 0; i < stations.length; i++) {
+            int end = stations[i] - w - 1;
+            if (end < start) {
+                start = stations[i] + w + 1;
                 continue;
             }
             
-            int range = 2 * w + 1, len = right - left + 1;
-            answer += addTower(len, range);
+            int dist = end - start + 1, width = 2 * w + 1;
+            if (dist <= width) answer++;
+            else answer += dist % width == 0 ? dist / width : dist / width + 1;
             
-            left = st + w + 1;
+            start = stations[i] + w + 1;
         }
         
-        if (n >= left) {
-            int range = 2 * w + 1, len = n - left + 1;
-            answer += addTower(len, range);
+        if (start <= n) {
+            int dist = n - start + 1, width = 2 * w + 1;
+            if (dist <= width) answer++;
+            else answer += dist % width == 0 ? dist / width : dist / width + 1;
         }
         
         return answer;
-    }
-    
-    private int addTower(int len, int range) {
-        if (len <= range) return 1;
-        else {
-            double res = len / range;
-            return len % range > 0 ? (int) res + 1 : (int) res;
-        }
     }
 }
