@@ -1,41 +1,58 @@
 import java.util.*;
 
-class Solution {
-    public int solution(String[] lines) {
-        List<int[]> times = new ArrayList<>();
-        for (String line : lines) {
-            String[] splited = line.split(" ");
-            int S = convertToMilliSecFromTime(splited[1].split(":"));
-            int T = convertToMilliSecFromExecuteTime(splited[2].substring(0, splited[2].length() - 1).replace(".", ""));
-            
-            int start = S - T + 1;
-            times.add(new int[]{start, S});
-        }
-        
-        int answer = 0;
-        for (int[] t : times) {
-            int cnt = 0;
-            int s = t[1], e = s + 999;
-            for (int[] tt : times) {
-                if (tt[0] <= e && tt[1] >= s) cnt++;
-            }
-            answer = Math.max(answer, cnt);
-        }
-        
-        return answer;
+class TimeConverter {
+    String time, processTime;
+    
+    public TimeConverter(String time, String processTime) {
+        this.time = time;
+        this.processTime = processTime;
     }
     
-    private int convertToMilliSecFromTime(String[] time) {
-        int h = Integer.parseInt(time[0]) * 3600000;
-        int m = Integer.parseInt(time[1]) * 60000;
-        int s = Integer.parseInt(time[2].split("\\.")[0]) * 1000;
-        int ss = Integer.parseInt(time[2].split("\\.")[1]);
-        
+    int convertTime() {
+        String[] sArr = this.time.split("[:.]");
+        int h = Integer.parseInt(sArr[0]) * 3600 * 1000;
+        int m = Integer.parseInt(sArr[1]) * 60 * 1000;
+        int s = Integer.parseInt(sArr[2]) * 1000;
+        int ss = Integer.parseInt(sArr[3]);
+            
         return h + m + s + ss;
     }
     
-    private int convertToMilliSecFromExecuteTime(String s) {
-        while (s.length() < 4) s += "0";
-        return Integer.parseInt(s);
+    int convertProcessTime() {
+        String str = this.processTime.substring(0, this.processTime.length() - 1).replace(".", "");
+        while (str.length() < 4) str += "0";
+        return Integer.parseInt(str);
+    }
+}
+
+class Solution {
+    public int solution(String[] lines) {
+        int len = lines.length;
+        int[][] times = new int[len][2];
+        
+        for (int i = 0; i < lines.length; i++) {
+            String[] line = lines[i].split(" ");
+            TimeConverter tc = new TimeConverter(line[1], line[2]);
+            int end = tc.convertTime(), processTime = tc.convertProcessTime();
+            int start = end - processTime + 1;
+            times[i][0] = start; times[i][1] = end;
+        }
+        
+        Arrays.sort(times, Comparator.comparing(o -> o[1]));
+        
+        int max = -1;
+        for (int i = 0; i < len; i++) {
+            int s = times[i][1], e = s + 999;
+            
+            int res = 0;
+            for (int[] t : times) {
+                if (t[1] < s || e < t[0]) continue;
+                res++;
+            }
+            
+            max = Math.max(res, max);
+        }
+        
+        return max;
     }
 }
