@@ -1,85 +1,73 @@
 import java.util.*;
 
+class Node implements Comparable<Node> {
+    int idx, cost;
+    
+    public Node(int idx, int cost) {
+        this.idx = idx;
+        this.cost = cost;
+    }
+    
+    @Override
+    public int compareTo(Node o) {
+        if (this.cost > o.cost) return 1;
+        else if (this.cost == o.cost) return 0;
+        else return -1;
+    }
+}
+
 class Solution {
-    List<List<int[]>> graph = new ArrayList<>();
-    boolean[] visited;
-    int size = 0;
+    List<Node>[] graph;
+    int[] distOfS, distOfA, distOfB;
+    int N;
     
     public int solution(int n, int s, int a, int b, int[][] fares) {
-        /*
-            어떠한 길을 공통으로 사용했을 때, 공통 사용 길의 마지막 지점으로 부터 각 목표하는 지점까지의 최소 길이 탐색
-            각 노드만큼 다익스트라 탐색하면 노드까지 가는 길 최소 거리 나옴
-            그럼 그 노드까지의 최소거리를 공동 길로 하여 탐색한 값 기록
-            탐색은 dijkstra
-        */
+        init(n, s, a, b, fares);
+        distOfS = dijkstra(s);
+        distOfA = dijkstra(a);
+        distOfB = dijkstra(b);
         
-        int answer = Integer.MAX_VALUE;
-        size = n;
-        init(size, fares);
-        int[] dist = dijkstra(s);
-        for (int i = 1; i <= size; i++) {
-            answer = Math.min(answer, dist[i] + dijkstra(i, a, b));
+        int min = Integer.MAX_VALUE;
+        for (int i = 1; i <= N; i++) min = Math.min(min, distOfS[i] + distOfA[i] + distOfB[i]);
+        
+        return min;
+    }
+    
+    private void init(int n, int s, int a, int b, int[][] fares) {
+        N = n;
+        
+        graph = new List[n + 1];
+        for (int i = 1; i <= n; i++) graph[i] = new ArrayList<>();
+        
+        distOfS = distOfA = distOfB = new int[n + 1];
+        
+        for (int[] fare : fares) {
+            int start = fare[0], end = fare[1], cost = fare[2];
+            graph[start].add(new Node(end, cost));
+            graph[end].add(new Node(start, cost));
         }
-        return answer;
     }
     
     private int[] dijkstra(int start) {
-        int[] dist = new int[size + 1];
+        Queue<Node> pq = new PriorityQueue<>();
+        pq.add(new Node(start, 0));
+        int[] dist = new int[N + 1];
         Arrays.fill(dist, Integer.MAX_VALUE);
         dist[start] = 0;
-        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparing(node -> node[1]));
-        pq.add(new int[]{start, 0});
         
         while (!pq.isEmpty()) {
-            int[] info = pq.poll();
-            int now = info[0], d = info[1];
-            if (dist[now] < d) continue;
+            Node now = pq.poll();
             
-            for (int[] nInfo : graph.get(now)) {
-                int next = nInfo[0], dd = nInfo[1];
-                if (dist[next] > dist[now] + dd) {
-                    dist[next] = dist[now] + dd;
-                    pq.add(new int[]{next, dist[next]});
+            if (now.cost > dist[now.idx]) continue;
+            
+            for (Node next : graph[now.idx]) {
+                if (dist[next.idx] > now.cost + next.cost) {
+                    dist[next.idx] = now.cost + next.cost;
+                    pq.add(new Node(next.idx, now.cost + next.cost));
                 }
             }
         }
         
         return dist;
-    }
-    
-    private int dijkstra(int start, int a, int b) {
-        int[] dist = new int[size + 1];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        dist[start] = 0;
-        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparing(node -> node[1]));
-        pq.add(new int[]{start, 0});
-        
-        while (!pq.isEmpty()) {
-            int[] info = pq.poll();
-            int now = info[0], d = info[1];
-            if (dist[now] < d) continue;
-            
-            for (int[] nInfo : graph.get(now)) {
-                int next = nInfo[0], dd = nInfo[1];
-                if (dist[next] > dist[now] + dd) {
-                    dist[next] = dist[now] + dd;
-                    pq.add(new int[]{next, dist[next]});
-                }
-            }
-        }
-        
-        return dist[a] + dist[b];
-    }
-    
-    private void init(int n, int[][] fares) {
-        visited = new boolean[n + 1];
-        for (int i = 0; i <= n; i++) {
-            graph.add(new ArrayList<>());
-        }
-        
-        for (int[] fare : fares) {
-            graph.get(fare[0]).add(new int[]{fare[1], fare[2]});
-            graph.get(fare[1]).add(new int[]{fare[0], fare[2]});
-        }
     }
 }
