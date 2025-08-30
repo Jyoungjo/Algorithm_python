@@ -1,31 +1,49 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.StringTokenizer;
+import java.util.*;
+
+class Thing {
+    private final int W, V;
+
+    Thing(int W, int V) {
+        this.W = W;
+        this.V = V;
+    }
+
+    public int getW() { return this.W; }
+    public int getV() { return this.V; }
+}
 
 class Main {
-    public static void main(String[] args) throws IOException {
+    int N, K;
+    Thing[] things;
+    int[][] dp;
+
+    private void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken()), K = Integer.parseInt(st.nextToken());
-        int[][] objects = new int[N + 1][2];
+        N = Integer.parseInt(st.nextToken());
+        K = Integer.parseInt(st.nextToken());
+        things = new Thing[N + 1];
         for (int i = 1; i <= N; i++) {
             st = new StringTokenizer(br.readLine());
-            objects[i] = new int[]{Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())};
+            things[i] = new Thing(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
         }
 
-        int[][] dp = new int[N + 1][K + 1];
-
+        dp = new int[N + 1][K + 1];
         for (int i = 1; i <= N; i++) {
-            int[] obj = objects[i];
-            int W = obj[0], V = obj[1];
-
             for (int j = 1; j <= K; j++) {
-                if (W > j) dp[i][j] = dp[i - 1][j];
+                Thing thing = things[i];
+                int W = thing.getW(), V = thing.getV();
+                if (j < W) dp[i][j] = dp[i - 1][j];
                 else dp[i][j] = Math.max(dp[i - 1][j], dp[i - 1][j - W] + V);
             }
         }
 
         System.out.println(dp[N][K]);
+    }
+
+    public static void main(String[] args) throws Exception {
+        new Main().solution();
     }
 }
