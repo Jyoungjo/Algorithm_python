@@ -1,58 +1,57 @@
 import java.util.*;
 
+class Car {
+    int y, x, dir, cost;
+    
+    Car(int y, int x, int dir, int cost) {
+        this.y = y;
+        this.x = x;
+        this.dir = dir;
+        this.cost = cost;
+    }
+}
+
 class Solution {
     final int[] dy = {-1, 0, 1, 0}, dx = {0, 1, 0, -1};
-    int[][] costs;
-    int R, C;
+    int N;
+    int[][][] dp;
     
     public int solution(int[][] board) {
-        /*
-            0 빈칸 1 벽 / 출발 (0,0) 도착 (N-1, N-1)
-            직선 100원 코너 500원
-            최소 비용 계산
-        */
-        R = board.length;
-        C = board[0].length;
-        costs = new int[R][C];
-        for (int i = 0; i < R; i++) {
-            Arrays.fill(costs[i], Integer.MAX_VALUE);
-        }
-        costs[0][0] = 0;
-        dfs(new int[]{0, 0}, 0, -1, board);
-        return costs[R - 1][C - 1];
+        N = board.length;
+        dp = new int[N][N][4];
+        return bfs(board);
     }
     
-    private void dfs(int[] now, int cost, int dir, int[][] board) {
-        int y = now[0], x = now[1];
-        if (costs[y][x] < cost) return;
+    private int bfs(int[][] board) {
+        int result = Integer.MAX_VALUE;
+        Queue<Car> q = new LinkedList<>();
+        q.add(new Car(0, 0, -1, 0));
         
-        for (int d = 0; d < 4; d++) {
-            int ny = y + dy[d], nx = x + dx[d];
-            if (!isWithinRange(ny, nx) || board[ny][nx] != 0) continue;
-            if (dir == -1) {
-                costs[ny][nx] = cost + 100;
-                dfs(new int[]{ny, nx}, cost + 100, d, board);
-            } else if (dir == 0 || dir == 2) {
-                if (d == 1 || d == 3) {
-                    if (costs[ny][nx] > cost + 600) costs[ny][nx] = cost + 600;
-                    dfs(new int[]{ny, nx}, cost + 600, d, board);
-                } else {
-                    if (costs[ny][nx] > cost + 100) costs[ny][nx] = cost + 100;
-                    dfs(new int[]{ny, nx}, cost + 100, d, board);
-                }
-            } else {
-                if (d == 0 || d == 2) {
-                    if (costs[ny][nx] > cost + 600) costs[ny][nx] = cost + 600;
-                    dfs(new int[]{ny, nx}, cost + 600, d, board);
-                } else {
-                    if (costs[ny][nx] > cost + 100) costs[ny][nx] = cost + 100;
-                    dfs(new int[]{ny, nx}, cost + 100, d, board);
-                }
+        while (!q.isEmpty()) {
+            Car now = q.poll();
+            
+            if (now.y == N - 1 && now.x == N - 1) result = Math.min(result, now.cost);
+            
+            for (int d = 0; d < 4; d++) {
+                int ny = now.y + dy[d], nx = now.x + dx[d];
+                
+                if (!isInRange(ny, nx) || board[ny][nx] == 1) continue;
+                
+                int nextCost = now.cost;
+                if (now.dir == -1 || now.dir == d) nextCost += 100;
+                else nextCost += 600;
+                
+                if (dp[ny][nx][d] == 0 || dp[ny][nx][d] > nextCost) {
+                    dp[ny][nx][d] = nextCost;
+                    q.add(new Car(ny, nx, d, nextCost));
+                } 
             }
         }
+        
+        return result;
     }
     
-    private boolean isWithinRange(int y, int x) {
-        return 0 <= y && y < R && 0 <= x && x < C;
+    private boolean isInRange(int y, int x) {
+        return 0 <= y && y < N && 0 <= x && x < N;
     }
 }
