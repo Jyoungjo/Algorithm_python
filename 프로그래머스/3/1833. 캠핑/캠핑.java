@@ -1,26 +1,41 @@
 import java.util.*;
 
 class Solution {
-    List<Integer> xList, yList, uXList, uYList;
-    
     public int solution(int n, int[][] data) {
-        makeList(n, data);
+        List<Integer> xList = new ArrayList<>();
+        List<Integer> yList = new ArrayList<>();
+        
+        for (int[] d : data) {
+            xList.add(d[0]);
+            yList.add(d[1]);
+        }
+        
+        List<Integer> compressedX = new ArrayList<>(new HashSet<>(xList));
+        List<Integer> compressedY = new ArrayList<>(new HashSet<>(yList));
+        
+        Collections.sort(compressedX);
+        Collections.sort(compressedY);
         
         int[][] dp = new int[n][n];
         for (int i = 0; i < n; i++) {
-            data[i][0] = uXList.indexOf(xList.get(i));
-            data[i][1] = uYList.indexOf(yList.get(i));
+            data[i][0] = compressedX.indexOf(xList.get(i));
+            data[i][1] = compressedY.indexOf(yList.get(i));
             
             dp[data[i][1]][data[i][0]] = 1;
         }
         
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (i - 1 >= 0) dp[i][j] += dp[i - 1][j];
-                if (j - 1 >= 0) dp[i][j] += dp[i][j - 1];
-                if (i - 1 >= 0 && j - 1 >= 0) dp[i][j] -= dp[i - 1][j - 1];
+                if (i > 0) dp[i][j] += dp[i - 1][j];
+                if (j > 0) dp[i][j] += dp[i][j - 1];
+                if (i > 0 && j > 0) dp[i][j] -= dp[i - 1][j - 1];
             }
         }
+        
+        Arrays.sort(data, (o1, o2) -> {
+            if (o1[0] == o2[0]) return o1[1] - o2[1];
+            return o1[0] - o2[0];
+        });
         
         int answer = 0;
         for (int i = 0; i < n; i++) {
@@ -33,26 +48,11 @@ class Solution {
                 if (r1 == r2 || c1 == c2) continue;
                 
                 int cnt = dp[r2 - 1][c2 - 1] - dp[r2 - 1][c1] - dp[r1][c2 - 1] + dp[r1][c1];
+                
                 if (cnt == 0) answer++;
             }
         }
         
         return answer;
-    }
-    
-    private void makeList(int n, int[][] data) {
-        xList = new ArrayList<>();
-        yList = new ArrayList<>();
-        
-        for (int i = 0; i < n; i++) {
-            xList.add(data[i][0]);
-            yList.add(data[i][1]);
-        }
-        
-        uXList = new ArrayList<>(new HashSet<>(xList));
-        uYList = new ArrayList<>(new HashSet<>(yList));
-        
-        Collections.sort(uXList);
-        Collections.sort(uYList);
     }
 }
