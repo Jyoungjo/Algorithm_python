@@ -4,66 +4,71 @@ class Solution {
     int N, M;
     
     public int solution(int n, int m, int[][] timetable) {
+        if (m == 1) return 0;
+        
         N = n; M = m;
+        int people = findOverlappedPeople(timetable);
+        return calDist(people);
+    }
+    
+    private int findOverlappedPeople(int[][] timetable) {
+        Arrays.sort(timetable, (o1, o2) -> {
+            if (o1[1] == o2[1]) return o1[0] - o2[0];
+            return o1[1] - o2[1];
+        });
         
-        int cnt = cntMember(timetable);
-        if (cnt <= 1) return 0;
-        
-        int l = 0, r = (n - 1) * 2, answer = 0;
-        while (l <= r) {
-            int mid = (l + r) / 2;
+        int people = Integer.MIN_VALUE;
+        for (int i = 0; i < M; i++) {
+            int tmp = 0;
+            int[] now = timetable[i];
             
-            if (canAssign(cnt, mid)) {
-                answer = mid;
-                l = mid + 1; // 최대한 멀리 떨어져야 하므로
+            for (int j = i + 1; j < M; j++) {
+                int[] next = timetable[j];
+                
+                if (next[1] < now[0] || now[1] < next[0]) continue;
+                tmp++;
+            }
+            people = Math.max(tmp, people);
+        }
+        
+        return people == 0 ? people : people + 1;
+    }
+    
+    private int calDist(int people) {
+        int l = 0, r = (N - 1) * 2, result = 0;
+        
+        while (l <= r) {
+            int mid = l + ((r - l) >> 1);
+            if (assign(mid, people)) {
+                l = mid + 1;
+                result = mid;
             } else r = mid - 1;
         }
         
-        return answer;
+        return result;
     }
     
-    private int cntMember(int[][] timetable) {
-        List<int[]> list = new ArrayList<>();
-        for (int[] t : timetable) {
-            list.add(new int[]{t[0], 1});
-            list.add(new int[]{t[1], -1});
-        }
-        
-        list.sort((a, b) -> {
-            if (a[0] == b[0]) return b[1] - a[1];
-            return a[0] - b[0];
-        });
-        
-        int ans = 0, max = 0;
-        for (int[] t : list) {
-            max += t[1];
-            ans = Math.max(ans, max);
-        }
-        
-        return ans;
-    }
-    
-    private boolean canAssign(int member, int dist) {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                List<int[]> placed = new ArrayList<>();
-                placed.add(new int[]{i, j});
+    private boolean assign(int dist, int people) {
+        for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
+                List<int[]> lockers = new ArrayList<>();
+                lockers.add(new int[]{r, c});
                 
-                for (int r = i; r < N; r++) {
-                    for (int c = 0; c < N; c++) {
-                        if (r == i && c <= j) continue;
+                for (int i = r; i < N; i++) {
+                    for (int j = 0; j < N; j++) {
+                        if (i == r && j <= c) continue;
                         
-                        boolean flag = true;
-                        for (int[] p : placed) {
-                            if (Math.abs(p[0] - r) + Math.abs(p[1] - c) < dist) {
-                                flag = false;
+                        boolean isAssigned = true;
+                        for (int[] l : lockers) {
+                            if (Math.abs(l[0] - i) + Math.abs(l[1] - j) < dist) {
+                                isAssigned = false;
                                 break;
                             }
                         }
                         
-                        if (flag) {
-                            placed.add(new int[]{r, c});
-                            if (placed.size() == member) return true;
+                        if (isAssigned) {
+                            lockers.add(new int[]{i, j});
+                            if (lockers.size() == people) return true;
                         }
                     }
                 }
