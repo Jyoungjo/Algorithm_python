@@ -2,44 +2,44 @@ import java.util.*;
 
 class Solution {
     int[] WEAK;
-    int answer = 987654321;
+    int answer = Integer.MAX_VALUE;
     
     public int solution(int n, int[] weak, int[] dist) {
-        int len = weak.length;
-        WEAK = new int[len * 2];
-        for (int i = 0; i < len; i++) {
+        WEAK = new int[weak.length * 2];
+        for (int i = 0; i < weak.length; i++) {
             WEAK[i] = weak[i];
-            WEAK[i + len] = weak[i] + n;
+            WEAK[i + weak.length] = weak[i] + n;
         }
         
-        permutations(new ArrayList<>(), dist, 0);
+        permutations(dist, new ArrayList<>(), 0);
         
-        return answer == 987654321 ? -1 : answer;
+        return answer == Integer.MAX_VALUE ? -1 : answer;
     }
     
-    private void permutations(List<Integer> list, int[] dist, int masked) {
-        if (answer <= list.size()) return;
+    private void permutations(int[] dist, List<Integer> picked, int mask) {
+        if (answer <= picked.size()) return;
         
         for (int i = 0; i < dist.length; i++) {
-            if ((masked & (1 << i)) != 0) continue;
-            List<Integer> tmp = new ArrayList<>(list);
+            if ((mask & (1 << i)) != 0) continue;
+            
+            List<Integer> tmp = new ArrayList<>(picked);
             tmp.add(dist[i]);
             check(tmp);
-            permutations(tmp, dist, masked | (1 << i));
+            permutations(dist, tmp, mask | (1 << i));
         }
     }
     
-    private void check(List<Integer> list) {
+    private void check(List<Integer> picked) {
         for (int i = 0; i < WEAK.length / 2; i++) {
             int idx = i;
             
-            for (int dist : list) {
-                int pos = WEAK[idx] + dist;
-                while (idx < WEAK.length && pos >= WEAK[idx]) idx++;
+            for (int dist : picked) {
+                int d = WEAK[idx] + dist;
+                while (idx < WEAK.length && d >= WEAK[idx]) idx++;
             }
             
             if (idx - i >= WEAK.length / 2) {
-                answer = Math.min(answer, list.size());
+                answer = Math.min(answer, picked.size());
                 return;
             }
         }
