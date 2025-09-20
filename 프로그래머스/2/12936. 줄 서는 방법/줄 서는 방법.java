@@ -1,25 +1,28 @@
 import java.util.*;
+import java.util.stream.*;
 
 class Solution {
     public int[] solution(int n, long k) {
-        // 전체 개수 - n!
-        int[] answer = new int[n];
         List<Integer> numbers = new LinkedList<>();
         for (int i = 1; i <= n; i++) numbers.add(i);
+        long[] factorial = makeFactorial(n);
         
-        long range = 1;
-        for (int i = n; i >= 1; i--) range *= i;
-        
-        int num = n;
         k--;
+        int[] answer = new int[n];
         for (int i = 0; i < n; i++) {
-            if (num > 0) range /= num--;
-            int idx = (int) (k / range);
+            int idx = (int) (k / factorial[n - 1 - i]);
             answer[i] = numbers.get(idx);
             numbers.remove(idx);
-            k %= range;
+            k %= factorial[n - 1 - i];
         }
         
         return answer;
+    }
+    
+    private long[] makeFactorial(int n) {
+        long[] tmp = new long[n + 1];
+        tmp[0] = 1;
+        for (int i = 1; i <= n; i++) tmp[i] = tmp[i - 1] * i;
+        return tmp;
     }
 }
