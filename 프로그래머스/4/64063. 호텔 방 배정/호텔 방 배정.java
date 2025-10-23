@@ -1,30 +1,28 @@
 import java.util.*;
 
 class Solution {
-    int size;
-    Map<Long, Long> roomInfo = new HashMap<>();
+    Map<Long, Long> nextRoom = new HashMap<>();
     
     public long[] solution(long k, long[] room_number) {
-        size = room_number.length;
-        long[] answer = new long[size];
+        int len = room_number.length;
+        long[] answer = new long[len];
         
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < len; i++) {
             answer[i] = findEmptyRoom(room_number[i]);
         }
         
         return answer;
     }
     
-    private long findEmptyRoom(long rn) {
-        if (!roomInfo.containsKey(rn)) {
-            roomInfo.put(rn, rn + 1);
-            return rn;
+    private long findEmptyRoom(long id) {
+        if (!nextRoom.containsKey(id)) {
+            nextRoom.put(id, id + 1);
+            return id;
         }
         
-        long nextRoom = roomInfo.get(rn);
-        long emptyRoom = findEmptyRoom(nextRoom);
+        long empty = findEmptyRoom(nextRoom.get(id));
         
-        roomInfo.put(rn, emptyRoom);
-        return emptyRoom;
+        nextRoom.put(id, empty);
+        return empty;
     }
 }
