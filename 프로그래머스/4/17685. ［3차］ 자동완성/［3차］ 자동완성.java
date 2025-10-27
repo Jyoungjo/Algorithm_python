@@ -23,19 +23,16 @@ class Trie {
     }
     
     int search(String word) {
-        int cnt = 0;
         Node node = this.root;
         
         for (int i = 0; i < word.length(); i++) {
             char c = word.charAt(i);
             
             node = node.child.get(c);
-            cnt++;
-            
-            if (node.cnt == 1) return cnt;
+            if (node.cnt == 1) return i + 1;
         }
         
-        return cnt;
+        return word.length();
     }
 }
 
@@ -45,7 +42,6 @@ class Solution {
         Trie trie = new Trie();
         for (String word : words) trie.insert(word);
         for (String word : words) answer += trie.search(word);
-        
         return answer;
     }
 }
