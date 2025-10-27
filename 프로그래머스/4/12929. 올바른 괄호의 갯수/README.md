@@ -1,10 +1,10 @@
 # [level 4] 올바른 괄호의 갯수 - 12929 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/12929) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/12929#) 
 
 ### 성능 요약
 
-메모리: 72.6 MB, 시간: 0.03 ms
+메모리: 81.4 MB, 시간: 0.02 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2025년 10월 07일 18:35:11
+2025년 10월 27일 18:39:29
 
 ### 문제 설명
 
