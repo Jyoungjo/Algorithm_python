@@ -1,61 +1,56 @@
+import java.util.*;
+
 public class Solution {
-    int N, PP, QQ;
-    int[][] LAND;
+    int R, C, P, Q;
     long l, r;
+    int[][] LAND;
     
     public long solution(int[][] land, int P, int Q) {
         init(land, P, Q);
-        findRange();
-        return cal();
+        return getMin();
     }
     
-    private long cal() {
-        long cost = 0;
-        
+    private long getMin() {
+        long result = 0;        
         while (l <= r) {
             long mid = l + ((r - l) >> 1);
             
-            long lVal = calCost(mid), rVal = calCost(mid + 1);
-            
-            if (lVal > rVal) {
-                cost = rVal;
-                l = mid + 1;
-            } else {
-                cost = lVal;
+            long lVal = calValue(mid), rVal = calValue(mid + 1);
+            if (lVal <= rVal) {
                 r = mid - 1;
+                result = lVal;
+            } else {
+                l = mid + 1;
+                result = rVal;
             }
         }
         
-        return cost;
+        return result;
     }
     
-    private long calCost(long height) {
+    private long calValue(long h) {
         long tmp = 0;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (LAND[i][j] < height) tmp += PP * (height - LAND[i][j]);
-                else tmp += QQ * (LAND[i][j] - height);
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j < C; j++) {
+                if (LAND[i][j] > h) tmp += this.Q * (LAND[i][j] - h);
+                else if (LAND[i][j] < h) tmp += this.P * (h - LAND[i][j]);
             }
         }
-        
         return tmp;
     }
     
-    private void findRange() {
-        l = LAND[0][0]; r = LAND[0][0];
+    private void init(int[][] land, int P, int Q) {
+        R = land.length; C = land[0].length;
+        LAND = land;
+        this.P = P;
+        this.Q = Q;
         
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (l > LAND[i][j]) l = LAND[i][j];
-                if (r < LAND[i][j]) r = LAND[i][j];
+        l = land[0][0]; r = land[0][0];
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j < C; j++) {
+                l = Math.min(l, land[i][j]);
+                r = Math.max(r, land[i][j]);
             }
         }
-    }
-    
-    private void init(int[][] land, int P, int Q) {
-        N = land.length;
-        LAND = land;
-        PP = P;
-        QQ = Q;
     }
 }
