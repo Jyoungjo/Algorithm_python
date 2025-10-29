@@ -1,38 +1,39 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
+
+class Process {
+    int priority, idx;
+    
+    Process(int priority, int idx) {
+        this.priority = priority;
+        this.idx = idx;
+    }
+}
 
 class Solution {
     public int solution(int[] priorities, int location) {
-        int answer = 1;
-        Queue<int[]> q = new LinkedList<>();
-
+        Queue<Process> q = new LinkedList<>();
+        
         for (int i = 0; i < priorities.length; i++) {
-            int[] tmp = new int[2];
-            tmp[0] = i;
-            tmp[1] = priorities[i];
-            q.add(tmp);
+            q.add(new Process(priorities[i], i));
         }
-
+        
+        int turn = 1;
         while (!q.isEmpty()) {
-            boolean flag = true;
-            int[] target = q.poll();
-            for (int[] e : q) {
-                if (target[1] < e[1]) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (!flag) {
-                q.add(target);
-            } else {
-                if (target[0] == location) {
-                    return answer;
-                } else {
-                    answer++;
-                }
-            }
+            Process now = q.poll();
+            if (canExecute(q, now)) {
+                if (now.idx == location) return turn;
+                else turn++;
+            } else q.add(now);
         }
-
-        return answer;
+        
+        return -1;
+    }
+    
+    private boolean canExecute(Queue<Process> q, Process process) {
+        for (Process p : q) {
+            if (process.priority < p.priority) return false;
+        }
+        
+        return true;
     }
 }
