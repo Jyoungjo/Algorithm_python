@@ -1,21 +1,17 @@
 class Solution {
     public int solution(int[][] sizes) {
-        int maxW = 0, maxH = 0;
-        
+        int answer = 0, w = -1, h = -1;
         for (int i = 0; i < sizes.length; i++) {
-            int width = sizes[i][0];
-            int height = sizes[i][1];
-            
-            if (width < height) {
-                int tmp = width;
-                width = height;
-                height = tmp;
+            int max = -1, min = 1001;
+            for (int j = 0; j < 2; j++) {
+                max = Math.max(max, sizes[i][j]);
+                min = Math.min(min, sizes[i][j]);
             }
             
-            if (maxW < width) maxW = width;
-            if (maxH < height) maxH = height;
+            w = Math.max(w, max);
+            h = Math.max(h, min);
         }
         
-        return maxW * maxH;
+        return w * h;
     }
 }
