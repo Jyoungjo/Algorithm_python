@@ -1,17 +1,17 @@
-import java.util.Stack;
+import java.util.*;
 
 class Solution {
     boolean solution(String s) {
-        Stack<Character> stack = new Stack<>();
-        for (int i = 0; i < s.length(); i++) {
-            char target = s.charAt(i);
-            if (target == '(') {
-                stack.push(target);
-            } else {
+        Deque<Character> stack = new ArrayDeque<>();
+        
+        char[] c = s.toCharArray();
+        for (int i = 0; i < c.length; i++) {
+            if (c[i] == ')') {
                 if (stack.isEmpty()) return false;
-                else stack.pop();
-            }
+                if (stack.peekLast() == '(') stack.removeLast();
+            } else stack.addLast(c[i]);
         }
+        
         return stack.isEmpty();
     }
 }
