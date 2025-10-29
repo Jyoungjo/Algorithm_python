@@ -1,24 +1,24 @@
 import java.util.*;
 
 class Solution {
+    Deque<Integer> stack = new ArrayDeque<>();
+    
     public int[] solution(int[] progresses, int[] speeds) {
-        List<Integer> answer = new ArrayList<>();
-        int[] days = new int[progresses.length];
-        Stack<Integer> stack = new Stack<>();
-        for (int i = 0; i < progresses.length; i++) {
-            int day = (int) Math.ceil((100 - (double) progresses[i]) / (double) speeds[i]);
-            days[i] = day;
-        }
-
-        for (int day : days) {
-            if (answer.isEmpty() || stack.peek() < day) {
-                stack.push(day);
+        List<Integer> answer = new LinkedList<>();
+        for (int i = 0; i < speeds.length; i++) {
+            int due = (int) Math.ceil((100 - (double) progresses[i]) / (double) speeds[i]);
+            
+            if (stack.isEmpty() || stack.peekLast() < due) {
+                stack.addLast(due);
                 answer.add(1);
-            } else {
-                answer.set(answer.size() - 1, answer.get(answer.size() - 1) + 1);
+                continue;
             }
+            
+            int tmp = answer.get(answer.size() - 1);
+            answer.remove(answer.size() - 1);
+            answer.add(tmp + 1);
         }
-
+        
         return answer.stream().mapToInt(Integer::intValue).toArray();
     }
 }
