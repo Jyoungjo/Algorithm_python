@@ -1,45 +1,44 @@
 import java.util.*;
 
 class Solution {
-    Set<Integer> comb = new HashSet<>();
+    Set<Integer> visited = new HashSet<>();
     
     public int solution(String[][] relation) {
         for (int i = 0; i < relation[0].length; i++) {
-            combinations(relation, 0, 0, i + 1);
+            combinations(relation, 0, 0, 0, i + 1);
         }
-
-        return comb.size();
+        
+        return visited.size();
     }
     
-    private void combinations(String[][] relation, int mask, int depth, int limit) {
+    private void combinations(String[][] relation, int start, int depth, int mask, int limit) {
         if (depth == limit) {
-            if (isMinimal(mask) && isUnique(relation, mask)) comb.add(mask);
+            if (isMinimal(mask) && isUnique(relation, mask)) visited.add(mask);
             return;
         }
         
-        for (int i = 0; i < relation[0].length; i++) {
-            if ((mask & (1 << i)) != 0) continue;
-            combinations(relation, mask | (1 << i), depth + 1, limit);
+        for (int i = start; i < relation[0].length; i++) {
+            combinations(relation, i + 1, depth + 1, mask | (1 << i), limit);
         }
     }
     
     private boolean isMinimal(int mask) {
-        for (int n : comb) {
-            if ((n & mask) == n) return false;
+        for (int v : visited) {
+            if ((mask & v) == v) return false;
         }
+        
         return true;
     }
     
     private boolean isUnique(String[][] relation, int mask) {
         Set<String> set = new HashSet<>();
         for (int i = 0; i < relation.length; i++) {
-            String tmp = "";
+            StringBuilder sb = new StringBuilder();
             for (int j = 0; j < relation[0].length; j++) {
-                if ((mask & (1 << j)) != 0) tmp += relation[i][j];
+                if ((mask & (1 << j)) != 0) sb.append(relation[i][j]).append(",");
             }
             
-            if (set.contains(tmp)) return false;
-            else set.add(tmp);
+            if (!set.add(sb.toString())) return false;
         }
         
         return true;
