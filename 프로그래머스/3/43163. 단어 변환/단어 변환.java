@@ -1,36 +1,50 @@
-class Solution {
-    int answer = 0;
-    boolean[] visited;
+import java.util.*;
+
+class Word {
+    String original;
+    int cnt;
     
-    public void dfs(String begin, String target, String[] words, int cnt) {
-        if (begin.equals(target)) {
-            answer = cnt;
-            return;
-        }
-        
-        for (int i = 0; i < words.length; i++) {
-            if (visited[i]) {
-                continue;
-            }
-            
-            int tmp = 0;
-            for (int j = 0; j < begin.length(); j++) {
-                if (begin.charAt(j) == words[i].charAt(j)) {
-                    tmp++;
-                }
-            }
-            
-            if (tmp == begin.length() - 1) {
-                visited[i] = true;
-                dfs(words[i], target, words, cnt + 1);
-                visited[i] = false;
-            }
-        }
+    Word(String original, int cnt) {
+        this.original = original;
+        this.cnt = cnt;
     }
+}
+
+class Solution {
+    final Set<String> wordSet = new HashSet<>();
     
     public int solution(String begin, String target, String[] words) {
-        visited = new boolean[words.length];
-        dfs(begin, target, words, 0);
-        return answer;
+        for (String word : words) wordSet.add(word);
+        if (!wordSet.contains(target)) return 0;
+        
+        return bfs(begin, target);
+    }
+    
+    private int bfs(String begin, String target) {
+        Queue<Word> q = new LinkedList<>();
+        Set<String> visited = new HashSet<>();
+        q.add(new Word(begin, 0));
+        visited.add(begin);
+        
+        int cnt = Integer.MAX_VALUE;
+        while (!q.isEmpty()) {
+            Word now = q.poll();
+            
+            if (now.original.equals(target)) cnt = Math.min(cnt, now.cnt);
+            
+            for (int idx = 0; idx < now.original.length(); idx++) {
+                char[] cArr = now.original.toCharArray();
+                for (int j = 0; j <= 26; j++) {
+                    cArr[idx] = (char) ((int) 'a' + j);
+                    String tmp = String.valueOf(cArr);
+                    if (!visited.contains(tmp) && wordSet.contains(tmp)) {
+                        q.add(new Word(tmp, now.cnt + 1));
+                        visited.add(tmp);
+                    }
+                }
+            }
+        }
+        
+        return cnt;
     }
 }
