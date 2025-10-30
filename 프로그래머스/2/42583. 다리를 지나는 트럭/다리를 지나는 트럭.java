@@ -1,35 +1,40 @@
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Queue;
-
+import java.util.*;
 
 class Solution {
+    Queue<Integer> bridge = new LinkedList<>();
+    
     public int solution(int bridge_length, int weight, int[] truck_weights) {
-        int answer = 0;
-        Deque<Integer> bridge = new LinkedList<>();
-        Queue<Integer> waiting = new LinkedList<>();
-
-        for (int truckWeight : truck_weights) {
-            waiting.add(truckWeight);
-        }
-
-        for (int i = 0; i < bridge_length; i++) {
-            bridge.add(0);
-        }
-
-        int currentWeight = 0;
-        while (!waiting.isEmpty()) {
-            int current = waiting.peek();
-            currentWeight -= bridge.pollFirst();
-            if (currentWeight + current <= weight) {
-                currentWeight += current;
-                bridge.add(waiting.poll());
-            } else {
+        makeBridge(bridge_length);
+        return move(weight, truck_weights);
+    }
+    
+    private int move(int weight, int[] trucks) {
+        int limit = 0, time = 0;
+        for (int truck : trucks) {
+            while (true) {
+                limit -= bridge.poll();
+            
+                if (limit + truck <= weight) {
+                    bridge.add(truck);
+                    limit += truck;
+                    time++;
+                    break;
+                }
+                
                 bridge.add(0);
+                time++;
             }
-            answer++;
         }
-
-        return answer + bridge_length;
+        
+        while (!bridge.isEmpty()) {
+            bridge.poll();
+            time++;
+        }
+        
+        return time;
+    }
+    
+    private void makeBridge(int len) {
+        for (int i = 0; i < len; i++) bridge.add(0);
     }
 }
