@@ -1,36 +1,32 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 class Solution {
+    Queue<Integer> q = new LinkedList<>();
+    
     public int[] solution(int[] prices) {
-        int[] answer = new int[prices.length];
-        Queue<Integer> queue = new LinkedList<>();
-
-        for (int price : prices) {
-            queue.add(price);
-        }
-
+        List<Integer> answer = new ArrayList<>();
+        for (int p : prices) q.add(p);
+        
         for (int i = 0; i < prices.length; i++) {
-            answer[i] = 0;
-        }
-
-        int idx = 0;
-        while (!queue.isEmpty()) {
-            int time = 0;
-            int p = queue.poll();
-
-            for (int e : queue) {
-                if (p <= e) {
-                    time++;
-                } else {
-                    time++;
+            int now = q.poll();
+            
+            if (q.isEmpty()) {
+                answer.add(0);
+                continue;
+            }
+            
+            int tmp = 0;
+            for (int nxt : q) {
+                if (now > nxt) {
+                    tmp++;
                     break;
                 }
+                tmp++;
             }
-            answer[idx] = time;
-            idx++;
+            
+            answer.add(tmp);
         }
-
-        return answer;
+        
+        return answer.stream().mapToInt(Integer::intValue).toArray();
     }
 }
